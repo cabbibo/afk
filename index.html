@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - helpers</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			#info > * {
+				max-width: 650px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			</style>
+	</head>
+	<body>
+		<div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - helpers
+		</div>
+
+
+		<script src="lib/jquery.min.js"></script>
+		<!-- Import maps polyfill -->
+		<!-- Remove this when import maps will be widely supported -->
+		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "./three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+
+
+		
+
+		<script type="module">
+
+			import * as THREE from 'three';
+import {
+	Box3,
+	MathUtils,
+	Matrix4,
+	Matrix3,
+	Ray,
+	Vector3,
+	Color,
+	TextureLoader
+} from 'three';
+
+import{ ShaderLoader } from './lib/ShaderLoader.js';
+
+			import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+
+			import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
+			import { VertexTangentsHelper } from 'three/addons/helpers/VertexTangentsHelper.js';
+
+			import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+			import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+			import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+			
+
+			import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+			import { HalftonePass } from 'three/addons/postprocessing/HalftonePass.js';
+			
+			import { PixelShader } from 'three/addons/shaders/PixelShader.js';
+
+			import { TransformControls } from 'three/addons/controls/TransformControls.js';
+			import Stats from 'three/addons/libs/stats.module.js';
+			import { Flow } from 'three/addons/modifiers/CurveModifier.js';
+			import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+			import { TTFLoader } from 'three/addons/loaders/TTFLoader.js';
+			import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+			const ACTION_SELECT = 1, ACTION_NONE = 0;
+			const curveHandles = [];
+			const mouse = new THREE.Vector2();
+
+			let scene, renderer;
+			let camera, light;
+			let vnh;
+			let vth;
+			let composer,  mixer;
+			let pixelPass,	control,
+				flow, rayCaster,
+				action = ACTION_NONE;
+
+
+			var neededToLoad = 0;
+			var numLoaded = 0;
+
+			var shaders = new ShaderLoader( 'shaders' );
+
+
+			addLoad();
+
+shaders.load( 'fs-trace'  , 'trace' , 'fragment' );
+shaders.load( 'vs-trace'  , 'trace' , 'vertex'   );
+shaders.load( 'fs-trace2'  , 'trace2' , 'fragment' );
+shaders.load( 'vs-trace2'  , 'trace2' , 'vertex'   );
+
+
+shaders.shaderSetLoaded = function(){
+
+	console.log("LOADED");
+  onLoad();
+}
+
+
+
+
+var textureLoader = new TextureLoader();
+	addLoad();
+  var matcap = textureLoader.load('img/rough-aluminium.jpg',function ( texture ) {
+    onLoad();
+  });
+
+
+
+
+
+  	const objLoader = new OBJLoader();
+	var afkModel;
+	objLoader.load( 'afk_loPoly.obj', function ( gltf ) {
+
+		afkModel = gltf.children[ 0 ];
+
+	} );
+
+
+	
+	var uniforms = {
+
+dT:       { type:"f"  , value : 0             },
+time:     { type:"f"  , value : 0             },
+lightPos: { type:"v3" , value : null          },
+t_matcap: { type:"t", value: matcap},
+
+_NoiseSize:{type:"f",value:3},
+_NoiseSpeed:{type:"f",value:.5},
+_NoiseOffset:{type:"f",value:1.5},
+_HueStart:{type:"f",value:.5},
+_HueSize:{type:"f",value:.01},
+_NormalDepth:{type:"f",value:1.1},
+_FFTStart:{type:"f",value:.1},
+_FFTSize:{type:"f",value:.1},
+_Saturation:{type:"f",value:1.1},
+_Lightness:{type:"f",value:3},
+_DiscardAmount:{type:"f",value:.9}
+
+}
+
+const params = {
+				exposure: 0,
+				bloomStrength:.3,
+				bloomThreshold: 0,
+				bloomRadius: 0,	shape: 1,
+					radius: 4,
+					rotateR: Math.PI / 12,
+					rotateB: Math.PI / 12 * 2,
+					rotateG: Math.PI / 12 * 3,
+					scatter: 0,
+					blending: 1,
+					blendingMode: 1,
+					greyscale: false,
+					disable: false,
+					pixelSize: 2,
+					postprocessing: true
+			};
+
+
+var clock = new THREE.Clock();
+
+
+			//init();
+			//animate();
+
+			function init() {
+
+
+
+
+
+	
+
+
+
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				
+				//renderer.toneMapping = THREE.ReinhardToneMapping;
+				renderer.setClearColor(new Color(1,0,0));
+
+				//
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 4, 4000 );
+				camera.position.z = 400;
+
+				scene = new THREE.Scene();
+
+				light = new THREE.PointLight();
+				light.position.set( 200, 100, 150 );
+				scene.add( light );
+
+				scene.add( new THREE.PointLightHelper( light, 15 ) );
+
+
+
+				var size = 500;
+				const initialPoints = [
+					{ x: -size, y: 10	, z: - size },
+					{ x: -size/2, y: -10, z: -size/2},
+					{ x:  size/2, y: -100, z: - size },
+					{ x: size, y: 10, z: - size/2 },
+					{ x: size, y: 10, z:  size/2 },
+					{ x: -size, y: 10, z: size },
+					//{ x:  size, y: 100, z: - size },
+					//{ x: size, y: 100, z: - size },
+				];
+
+				const boxGeometry = new THREE.BoxGeometry( 40,40, 40);
+				const boxMaterial = new THREE.MeshBasicMaterial({color:0x00ff00});
+
+				for ( const handlePos of initialPoints ) {
+
+					const handle = new THREE.Mesh( boxGeometry, boxMaterial );
+					handle.position.copy( handlePos );
+					curveHandles.push( handle );
+					scene.add( handle );
+
+				}
+
+				const curve = new THREE.CatmullRomCurve3(
+					curveHandles.map( ( handle ) => handle.position )
+				);
+				curve.curveType = 'centripetal';
+				curve.closed = true;
+
+				const points = curve.getPoints( 50 );
+				const line = new THREE.LineLoop(
+					new THREE.BufferGeometry().setFromPoints( points ),
+					new THREE.LineBasicMaterial( { color: 0x00ff00 } )
+				);
+
+				scene.add( line );
+
+
+
+
+				const gridHelper = new THREE.GridHelper( 400, 40, 0x0000ff, 0x808080 );
+				gridHelper.position.y = - 150;
+				gridHelper.position.x = 0;
+				scene.add( gridHelper );
+
+				const polarGridHelper = new THREE.PolarGridHelper( 200, 16, 8, 64, 0x0000ff, 0x808080 );
+				polarGridHelper.position.y = - 150;
+				polarGridHelper.position.x = 200;
+				//scene.add( polarGridHelper );
+
+				const group = new THREE.Group();
+				group.scale.multiplyScalar( 100 );
+				group.rotation.x = 3.14159/2
+				scene.add( group );
+
+				// To make sure that the matrixWorld is up to date for the boxhelpers
+				group.updateMatrixWorld( true );
+
+				var raytraceMat = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: shaders.vs.trace,
+        fragmentShader: shaders.fs.trace,
+        side: THREE.DoubleSide,
+		depthTest: false,
+		wireframe : true,
+      })
+
+				
+
+				var pretty = new THREE.Mesh( afkModel.geometry , new THREE.MeshNormalMaterial());
+				//group.add( pretty );
+
+				var pretty = new THREE.Mesh( afkModel.geometry , new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)}));
+				group.add( pretty );
+
+
+				var pretty = new THREE.Mesh( afkModel.geometry , raytraceMat);
+				group.add( pretty );
+
+		
+				//group.remove(pretty);
+
+			//	vth = new VertexTangentsHelper( afkModel, 5 );
+			//	scene.add( vth );
+
+				//scene.add( new THREE.BoxHelper( afkModel ) );
+
+				const wireframe = new THREE.WireframeGeometry( afkModel.geometry );
+				let line3 = new THREE.LineSegments( wireframe );
+				line3.material.depthTest = false;
+				line3.material.opacity = 1;
+				line3.material.color = new Color(111,111,111);
+				//line.material.transparent = true;
+				//line.position;
+				//group.add( line );
+
+
+				const wireframe2 = new THREE.WireframeGeometry( afkModel.geometry );
+				let line2 = new THREE.Mesh( wireframe2,raytraceMat );
+				line.material.depthTest = false;
+				line.material.opacity = 1;
+				line.material.color = new Color(111,111,111);
+				//line.material.transparent = true;
+				//line.position;
+				//group.add( line );
+				//
+
+				window.addEventListener( 'resize', onWindowResize );
+
+
+				const renderScene = new RenderPass( scene, camera );
+
+const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+bloomPass.threshold = params.bloomThreshold;
+bloomPass.strength = params.bloomStrength;
+bloomPass.radius = params.bloomRadius;
+
+
+pixelPass = new ShaderPass( PixelShader );
+				pixelPass.uniforms[ 'resolution' ].value = new THREE.Vector2( window.innerWidth, window.innerHeight );
+				pixelPass.uniforms[ 'resolution' ].value.multiplyScalar( window.devicePixelRatio );
+
+
+
+const halftonePass = new HalftonePass( window.innerWidth, window.innerHeight, params );
+
+composer = new EffectComposer( renderer );
+composer.addPass( renderScene );
+//composer.addPass(pixelPass);
+//composer.addPass(halftonePass);
+composer.addPass( bloomPass );
+
+
+
+
+const ttfLoader = new TTFLoader()
+const fontLoader = new FontLoader();
+				ttfLoader.load( 'fonts/Yerk-Italic.ttf', function( fnt) {
+
+					const font = fontLoader.parse(fnt)
+
+					const geometry = new TextGeometry( 'Lil Data... AG COOK... EASYFUN... CARO<3', {
+						font: font,
+						size: 50,
+						height: 1,
+						curveSegments: 12,
+						bevelEnabled: true,
+						bevelThickness: 0.02,
+						bevelSize: 0.01,
+						bevelOffset: 0,
+						bevelSegments: 5,
+					} );
+
+					geometry.rotateX( Math.PI );
+
+					const material = new THREE.MeshBasicMaterial( {
+						color: 0x00ffff,
+						//wireframe: true
+					} );
+
+					const objectToCurve = new THREE.Mesh( geometry, material );
+
+					flow = new Flow( objectToCurve );
+					flow.updateCurve( 0, curve );
+					scene.add( flow.object3D );
+
+				} );
+
+
+
+				renderer.domElement.addEventListener( 'pointerdown', onPointerDown );
+				
+				rayCaster = new THREE.Raycaster();
+				control = new TransformControls( camera, renderer.domElement );
+				control.addEventListener( 'dragging-changed', function ( event ) {
+
+					if ( ! event.value ) {
+
+						const points = curve.getPoints( 50 );
+
+						console.log(points);
+						line.geometry.setFromPoints( points );
+						flow.updateCurve( 0, curve );
+
+					}
+
+				} );
+
+
+
+			}
+
+			function onWindowResize() {
+				const width = window.innerWidth;
+				const height = window.innerHeight;
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				composer.setSize( width, height );
+				pixelPass.uniforms[ 'resolution' ].value.set( window.innerWidth, window.innerHeight ).multiplyScalar( window.devicePixelRatio );
+
+			}
+
+			function onPointerDown( event ) {
+
+action = ACTION_SELECT;
+mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				const time = - performance.now() * 0.0003;
+				
+				uniforms.dT.value = clock.getDelta();
+   			 uniforms.time.value += uniforms.dT.value;
+
+				camera.position.x = 100 * Math.cos( time );
+				camera.position.z = 400;//* Math.sin( time );
+				camera.lookAt( scene.position );
+
+				light.position.x = Math.sin( time * 1.7 ) * 300;
+				light.position.y = Math.cos( time * 1.5 ) * 400;
+				light.position.z = Math.cos( time * 1.3 ) * 300;
+
+				//if ( vnh ) vnh.update();
+				//if ( vth ) vth.update();
+
+				//renderer.render( scene, camera );
+
+
+				if ( action === ACTION_SELECT ) {
+
+rayCaster.setFromCamera( mouse, camera );
+action = ACTION_NONE;
+const intersects = rayCaster.intersectObjects( curveHandles, false );
+if ( intersects.length ) {
+
+	const target = intersects[ 0 ].object;
+	control.attach( target );
+	scene.add( control );
+
+}
+
+}
+
+if ( flow ) {
+
+flow.moveAlongCurve( -0.001 );
+
+}
+
+				composer.render();
+
+			}
+
+
+
+			function addLoad(){
+    neededToLoad ++;
+  }
+
+  function onLoad(){
+    numLoaded ++;
+    if( numLoaded == neededToLoad ){
+      init();
+      animate();
+    }
+  }
+
+
+		</script>
+
+	</body>
+</html>
