@@ -11,6 +11,11 @@
 				margin-left: auto;
 				margin-right: auto;
 			}
+
+			body{
+			//background-image: linear-gradient(red, yellow);
+			background:#ff0000;
+			}
 			</style>
 	</head>
 	<body>
@@ -54,6 +59,7 @@ import {
 import{ ShaderLoader } from './lib/ShaderLoader.js';
 
 			import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+			import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 
 			import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
 			import { VertexTangentsHelper } from 'three/addons/helpers/VertexTangentsHelper.js';
@@ -62,19 +68,38 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 			import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 			import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 			
+			import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 
 			import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 			import { HalftonePass } from 'three/addons/postprocessing/HalftonePass.js';
+
+			
+			import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
+			import { DotScreenPass } from 'three/addons/postprocessing/DotScreenPass.js';
+			import { TexturePass } from 'three/addons/postprocessing/TexturePass.js';
+
+			import { BleachBypassShader } from 'three/addons/shaders/BleachBypassShader.js';
+			import { ColorifyShader } from 'three/addons/shaders/ColorifyShader.js';
+			import { HorizontalBlurShader } from 'three/addons/shaders/HorizontalBlurShader.js';
+			import { VerticalBlurShader } from 'three/addons/shaders/VerticalBlurShader.js';
+			import { SepiaShader } from 'three/addons/shaders/SepiaShader.js';
+			import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
+			import { GammaCorrectionShader } from 'three/addons/shaders/GammaCorrectionShader.js';
+			import { BokehShader, BokehDepthShader } from 'three/addons/shaders/BokehShader2.js';
 			
 			import { PixelShader } from 'three/addons/shaders/PixelShader.js';
 
 			import { TransformControls } from 'three/addons/controls/TransformControls.js';
-			import Stats from 'three/addons/libs/stats.module.js';
 			import { Flow } from 'three/addons/modifiers/CurveModifier.js';
 			import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 			import { TTFLoader } from 'three/addons/loaders/TTFLoader.js';
 			import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
+
+			import * as Curves from 'three/addons/curves/CurveExtras.js';
+			
+			import Stats from 'three/addons/libs/stats.module.js';
+			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 			const ACTION_SELECT = 1, ACTION_NONE = 0;
 			const curveHandles = [];
 			const mouse = new THREE.Vector2();
@@ -88,6 +113,8 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 				flow, rayCaster,
 				action = ACTION_NONE;
 
+				let stats;
+
 
 			var neededToLoad = 0;
 			var numLoaded = 0;
@@ -99,8 +126,10 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 
 shaders.load( 'fs-trace'  , 'trace' , 'fragment' );
 shaders.load( 'vs-trace'  , 'trace' , 'vertex'   );
-shaders.load( 'fs-trace2'  , 'trace2' , 'fragment' );
+shaders.load( 'fs-trace3'  , 'trace2' , 'fragment' );
 shaders.load( 'vs-trace2'  , 'trace2' , 'vertex'   );
+shaders.load( 'vs-gradient'  , 'gradient' , 'vertex'   );
+shaders.load( 'fs-gradient'  , 'gradient' , 'fragment'   );
 
 
 shaders.shaderSetLoaded = function(){
@@ -118,17 +147,140 @@ var textureLoader = new TextureLoader();
     onLoad();
   });
 
+  addLoad();
+  var diffuseRock = textureLoader.load('img/Textures_8K/WallRock_Diffuse_8K.jpg',function ( texture ) {
+    onLoad();
+  });
 
+
+
+
+addLoad();
+  const ttfLoader = new TTFLoader()
+const fontLoader = new FontLoader();
+				ttfLoader.load( 'fonts/FT88-Expanded.ttf', function( fnt) {
+
+					const font = fontLoader.parse(fnt)
+
+					var geometry = new TextGeometry( 'away from keyboard', {
+						font: font,
+						size: .04,
+						height: .01,
+						curveSegments: 12,
+						bevelEnabled: false,
+						bevelThickness: 0.00,
+						bevelSize: 0.01,
+						bevelOffset: 0,
+						bevelSegments: 5,
+					} );
+
+					geometry.rotateX( Math.PI  * -.5);
+
+					fontGeo = geometry;
+
+
+					var geometry = new TextGeometry( 'AFK', {
+						font: font,
+						size: .5,
+						height: .1,
+						curveSegments: 12,
+						bevelEnabled: true,
+						bevelThickness: 0.02,
+						bevelSize: 0.01,
+						bevelOffset: 0,
+						bevelSegments: 5,
+					} );
+
+					geometry.rotateX( Math.PI  * -.5);
+
+					fontGeo2 = geometry;
+
+					onLoad();
+
+				} );
 
 
 
   	const objLoader = new OBJLoader();
 	var afkModel;
-	objLoader.load( 'afk_loPoly.obj', function ( gltf ) {
 
+	addLoad();
+	objLoader.load( 'afk_loPoly.obj', function ( gltf ) {
+		onLoad();
 		afkModel = gltf.children[ 0 ];
 
 	} );
+
+	var rockModel;
+
+	addLoad();
+	objLoader.load( 'img/WallRock_obj/WallRock_obj.obj', function ( gltf ) {
+
+rockModel = gltf.children[ 0 ];
+onLoad();
+
+} );
+
+
+
+var tubeModel;
+
+addLoad();
+objLoader.load( 'img/longTube.obj', function ( gltf ) {
+
+console.log("hiii");
+
+tubeModel = gltf.children[ 0 ];
+console.log(tubeModel);
+onLoad();
+
+} );
+
+var fernModel;
+
+addLoad();
+objLoader.load( 'img/matteucia_struthiopteris_loPoly.obj', function ( gltf ) {
+
+fernModel = gltf.children[ 0 ];
+onLoad();
+
+} );
+
+
+
+var computerModel;
+
+addLoad();
+objLoader.load( 'img/computerOBJ.obj', function ( gltf ) {
+
+computerModel = gltf.children[ 0 ];
+onLoad();
+
+} );
+
+
+addLoad();
+  var diffuseFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_1_01_diffuse.jpg',function ( texture ) {
+    onLoad();
+  });
+
+  addLoad();
+  var normalFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_1_04_normal.jpg',function ( texture ) {
+    onLoad();
+  });
+
+
+  addLoad();
+  var specularFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_1_02_specular.jpg',function ( texture ) {
+    onLoad();
+  });
+
+
+  addLoad();
+  var bumpFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_bump.jpg',function ( texture ) {
+    onLoad();
+  });
+
 
 
 	
@@ -141,7 +293,7 @@ t_matcap: { type:"t", value: matcap},
 
 _NoiseSize:{type:"f",value:3},
 _NoiseSpeed:{type:"f",value:.5},
-_NoiseOffset:{type:"f",value:1.5},
+_NoiseOffset:{type:"f",value:0.1},
 _HueStart:{type:"f",value:.5},
 _HueSize:{type:"f",value:.01},
 _NormalDepth:{type:"f",value:1.1},
@@ -168,12 +320,22 @@ const params = {
 					greyscale: false,
 					disable: false,
 					pixelSize: 2,
-					postprocessing: true
+					postprocessing: true,
+					
+					focus: 400.0,
+					aperture: 5,
+					maxblur: 0.01
+
+					
 			};
 
 
 var clock = new THREE.Clock();
 
+
+var spiralGeo;
+let fontGeo;
+let fontGeo2;
 
 			//init();
 			//animate();
@@ -189,40 +351,67 @@ var clock = new THREE.Clock();
 
 
 
-				renderer = new THREE.WebGLRenderer();
+				renderer = new THREE.WebGLRenderer( { alpha: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				//renderer.info.alpha = true;
 				document.body.appendChild( renderer.domElement );
 				
+
+				
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+
+
 				//renderer.toneMapping = THREE.ReinhardToneMapping;
-				renderer.setClearColor(new Color(1,0,0));
+				renderer.setClearColor(0x00f000, 1)
 
 				//
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 4, 4000 );
-				camera.position.z = 400;
+				camera.position.z = 800;
 
 				scene = new THREE.Scene();
+				scene.background = null;
 
-				light = new THREE.PointLight();
-				light.position.set( 200, 100, 150 );
-				scene.add( light );
+				//light = new THREE.PointLight();
+				//light.position.set( 200, 100, 150 );
+				//scene.add( light );
 
-				scene.add( new THREE.PointLightHelper( light, 15 ) );
+				//scene.add( new THREE.PointLightHelper( light, 20 ) );
 
 
 
-				var size = 500;
-				const initialPoints = [
-					{ x: -size, y: 10	, z: - size },
-					{ x: -size/2, y: -10, z: -size/2},
-					{ x:  size/2, y: -100, z: - size },
-					{ x: size, y: 10, z: - size/2 },
-					{ x: size, y: 10, z:  size/2 },
-					{ x: -size, y: 10, z: size },
+				var size = 1;
+
+				const initialPoints = []
+				for( var i = 0; i < 100; i++ ){
+
+
+					var angle = i * .5;
+					var radius = .005 * i + 2 ;
+					var height = .01;
+
+					
+
+					var p = {
+						x: -Math.cos( angle ) * radius,
+						z: Math.sin(angle) * radius,
+						y: i * height - 1
+					}
+					initialPoints.push(p);
+
+				}
+				/*const initialPoints = [
+					{ x: -size, y: .1 * size	, z: - size },
+					{ x: -size/2, y: -1 * size, z: -size/2},
+					{ x:  size/2, y: -1 * size, z: - size },
+					{ x: size, y: .1, z: - size/2 },
+					{ x: size, y: .1, z:  size/2 },
+					{ x: -size, y: .1, z: size },
 					//{ x:  size, y: 100, z: - size },
 					//{ x: size, y: 100, z: - size },
-				];
+				];*/
 
 				const boxGeometry = new THREE.BoxGeometry( 40,40, 40);
 				const boxMaterial = new THREE.MeshBasicMaterial({color:0x00ff00});
@@ -232,7 +421,7 @@ var clock = new THREE.Clock();
 					const handle = new THREE.Mesh( boxGeometry, boxMaterial );
 					handle.position.copy( handlePos );
 					curveHandles.push( handle );
-					scene.add( handle );
+					//scene.add( handle );
 
 				}
 
@@ -240,7 +429,7 @@ var clock = new THREE.Clock();
 					curveHandles.map( ( handle ) => handle.position )
 				);
 				curve.curveType = 'centripetal';
-				curve.closed = true;
+				curve.closed = false//true;
 
 				const points = curve.getPoints( 50 );
 				const line = new THREE.LineLoop(
@@ -248,17 +437,20 @@ var clock = new THREE.Clock();
 					new THREE.LineBasicMaterial( { color: 0x00ff00 } )
 				);
 
-				scene.add( line );
 
-
-
-
-				const gridHelper = new THREE.GridHelper( 400, 40, 0x0000ff, 0x808080 );
+				var gridHelper = new THREE.GridHelper( 2000, 50, 0x000000, 0x000000 );
 				gridHelper.position.y = - 150;
 				gridHelper.position.x = 0;
-				scene.add( gridHelper );
+				//gridHelper.rotation.x = .1;
+				//scene.add( gridHelper );
 
-				const polarGridHelper = new THREE.PolarGridHelper( 200, 16, 8, 64, 0x0000ff, 0x808080 );
+				var gridHelper = new THREE.GridHelper( 2000, 50, 0x000000, 0x000000 );
+				gridHelper.position.y = 150;
+				gridHelper.position.x = 0;
+				gridHelper.rotation.x = -.1;
+				//scene.add( gridHelper );
+
+				const polarGridHelper = new THREE.PolarGridHelper( 200, 16, 8, 64, 0x000000, 0x808080 );
 				polarGridHelper.position.y = - 150;
 				polarGridHelper.position.x = 200;
 				//scene.add( polarGridHelper );
@@ -267,6 +459,7 @@ var clock = new THREE.Clock();
 				group.scale.multiplyScalar( 100 );
 				group.rotation.x = 3.14159/2
 				scene.add( group );
+				//group.add( line );
 
 				// To make sure that the matrixWorld is up to date for the boxhelpers
 				group.updateMatrixWorld( true );
@@ -276,23 +469,245 @@ var clock = new THREE.Clock();
         vertexShader: shaders.vs.trace,
         fragmentShader: shaders.fs.trace,
         side: THREE.DoubleSide,
-		depthTest: false,
-		wireframe : true,
+		//depthTest: false,
+		//wireframe : true,
       })
 
+	 // var curve1 = new Curves.GrannyKnot(.1);
+
+	 var matte = new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)});
+	  let tubeGeometry = new THREE.TubeGeometry( curve,1000, .01, 3 );
+
+
+	  	var pretty  =new THREE.Mesh( tubeGeometry , matte);
+		
+		pretty.rotation.x = .4;
+		pretty.rotation.y = .3;
+		pretty.position.x = 1;
+		var s = .5;
+		pretty.scale.set(s,s,s);
+
+		spiralGeo = pretty;
+
+
+		//group.add(pretty);
 				
 
-				var pretty = new THREE.Mesh( afkModel.geometry , new THREE.MeshNormalMaterial());
+
+		var s2 = new THREE.ShaderMaterial({
+    uniforms: {
+      uColorA: { value: new THREE.Color(1,.8,1) },
+      uColorB: { value: new THREE.Color(1,.8,0) }
+    },
+        vertexShader: shaders.vs.gradient,
+        fragmentShader: shaders.fs.gradient
+  })
+
+  var raytraceMat2 = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: shaders.vs.trace2,
+        fragmentShader: shaders.fs.trace2,
+        side: THREE.DoubleSide,
+		//depthTest: false,
+		//wireframe : true,
+      })
+		var pretty  =new THREE.Mesh( tubeModel.geometry , raytraceMat2 );
+		
+		var s = 2;
+		pretty.position.y = 0;
+		pretty.scale.set(s,s,s);
+		group.add(pretty);
+
+		
+
+
+
+
+
+		var pretty  =new THREE.Mesh( tubeGeometry , matte);
+		
+		pretty.rotation.x = -.4;
+		pretty.rotation.y = -.3;
+		pretty.position.x = -1;
+		var s = .5;
+		pretty.scale.set(s,s,s);
+
+		spiralGeo = pretty;
+
+
+		//group.add(pretty);
+
+		for( var i = 0; i < 20; i++){
+					
+		var pretty  =new THREE.Mesh( tubeGeometry , matte);
+		
+		pretty.rotation.x = (Math.random()-.5) * 100;
+		pretty.rotation.y = (Math.random()-.5) * 100;;
+
+		
+		pretty.position.x = (Math.random()-.5) * 10;
+		pretty.position.y = (Math.random()-.5) * 10;;
+		pretty.position.z = -1;
+		var s = .2 + Math.random() * .2;
+		pretty.scale.set(s,s,s);
+
+		//spiralGeo = pretty;
+
+
+	//	group.add(pretty);
+		}
+				
+
+
+		var pretty = new THREE.Mesh( rockModel.geometry , new THREE.MeshBasicMaterial({map:diffuseRock}));
+		pretty.rotation.x = -Math.PI * .5;
+		s =3
+		pretty.scale.set( s,s,s);
+		pretty.position.z = 2;
+		pretty.position.y = -8;
+
+		group.add(pretty);
+
+
+
+						
+
+
+		var pretty = new THREE.Mesh( computerModel.geometry , new THREE.MeshBasicMaterial({color:0xffddaa}));
+		var pretty2 = new THREE.Mesh( computerModel.geometry , new THREE.MeshBasicMaterial({color:0x000000,wireframe:true}));
+		pretty.add(pretty2)
+		pretty.rotation.x = -Math.PI * .5;
+		pretty.rotation.y = Math.PI * .5;
+		s =5
+		pretty.scale.set( s,s,s);
+		pretty.position.z = 1.5;
+		pretty.position.y = -1;
+		group.add(pretty);
+
+
+		var light = new THREE.DirectionalLight( 0xffffff, 1 );
+light.position.set( 0, 1, 0 ); //default; light shining from top
+light.castShadow = true; // default false
+scene.add( light );
+
+//Set up shadow properties for the light
+light.shadow.mapSize.width = 512; // default
+light.shadow.mapSize.height = 512; // default
+light.shadow.camera.near = 0.5; // default
+light.shadow.camera.far = 500; // default
+
+
+		var fernMaterial = new THREE.MeshStandardMaterial();
+
+		fernMaterial.map = diffuseFern;
+		fernMaterial.normalMap = normalFern;
+		fernMaterial.castShadow = true;
+		fernMaterial.receiveShadow = true;
+
+		var fM = fernMaterial;//new THREE.MeshBasicMaterial({map:diffuseFern});	 
+		var matte2 = new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0),wireframe:true});
+		for( var i = 0; i < 20; i++ ){
+		var pretty = new THREE.Mesh( fernModel.geometry , fM);
+		var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
+
+		
+		//var pretty = new THREE.Mesh( fernModel.geometry , matte2);
+		//var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
+		//pretty.add(pretty2);
+		//pretty.rotation.x = -Math.PI * .5;
+		s =.1 + Math.random() * .2;
+		pretty.scale.set( s,s,s);
+		pretty.position.y= -(Math.random()) * 30 -3 ;
+		pretty.position.x =  (Math.random()-.5) * 1 * pretty.position.y;;
+		pretty.position.z = (Math.random()-.5) * 1 * pretty.position.y-1;
+
+		group.add(pretty);
+
+		}
+
+		for( var i = 0; i < 50; i++ ){
+		var pretty = new THREE.Mesh( fernModel.geometry , fM);
+		var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
+
+		
+		//var pretty = new THREE.Mesh( fernModel.geometry , matte2);
+		//var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
+		//pretty.add(pretty2);
+		pretty.rotation.x = -Math.PI * .5;
+		s =.1 + Math.random() * .2;
+		pretty.scale.set( s,s,s);
+		pretty.position.y= -(Math.random()) * 30 ;
+		pretty.position.x =  (Math.random()-.5) * 1 * pretty.position.y;;
+		pretty.position.z = 2;//(Math.random()-.5) * 1 * pretty.position.y-1;
+
+		group.add(pretty);
+
+		}
+
+
+
+				var pretty = new THREE.Mesh( afkModel.geometry , matte);
 				//group.add( pretty );
 
 				var pretty = new THREE.Mesh( afkModel.geometry , new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)}));
-				group.add( pretty );
+				//group.add( pretty );
 
 
-				var pretty = new THREE.Mesh( afkModel.geometry , raytraceMat);
-				group.add( pretty );
+				var pretty = new THREE.Mesh( fontGeo2, raytraceMat);
+				pretty.position.x = -2;
+				//group.add( pretty );
+
+				if (!pretty.customDepthMaterial) {
+					pretty.customDepthMaterial = new THREE.MeshDepthMaterial({
+                  depthPacking: THREE.RGBADepthPacking,
+                 // map: m.map,
+                  alphaTest: 0.5
+                });
+              }
+              if (!pretty.customDistanceMaterial) {
+                pretty.customDistanceMaterial = new THREE.MeshDistanceMaterial({
+                  //depthPacking: THREE.RGBADepthPacking,
+                 // map: m.map,
+                  alphaTest: 0.5
+                });
+              }
+
+				var pretty = new THREE.Mesh( fontGeo ,matte);
+				pretty.position.x =1.5;
+				pretty.rotation.z = Math.PI * .5;
+				pretty.position.y = 2;
+				pretty.position.z = .8;
+				pretty.scale.set(4,4,4)
+				//group.add(pretty);
+
+
+				var pretty = new THREE.Mesh( fontGeo2 ,matte);
+				pretty.position.x = -1.4;
+				pretty.position.y = 4;
+				pretty.position.z = 1;
+				pretty.scale.set(1,1,1)
+				group.add(pretty);
 
 		
+
+
+				var myGradient = new THREE.Mesh(
+  new THREE.PlaneGeometry(20,20,1,1),
+  new THREE.ShaderMaterial({
+    uniforms: {
+      uColorA: { value: new THREE.Color(1,.8,1) },
+      uColorB: { value: new THREE.Color(1,.8,0) }
+    },
+        vertexShader: shaders.vs.gradient,
+        fragmentShader: shaders.fs.gradient
+  })
+)
+
+myGradient.material.depthWrite = false
+myGradient.renderOrder = -99999
+myGradient.position.x = 100
+
+scene.add(myGradient);
 				//group.remove(pretty);
 
 			//	vth = new VertexTangentsHelper( afkModel, 5 );
@@ -339,47 +754,20 @@ pixelPass = new ShaderPass( PixelShader );
 
 const halftonePass = new HalftonePass( window.innerWidth, window.innerHeight, params );
 
+const bokehPass = new BokehPass( scene, camera, params);
+
+const effectFilm = new FilmPass( 0.35, .1, 10, false );
+
 composer = new EffectComposer( renderer );
 composer.addPass( renderScene );
-//composer.addPass(pixelPass);
-//composer.addPass(halftonePass);
 //composer.addPass( bloomPass );
+composer.addPass(effectFilm);
+//composer.addPass( bokehPass );
+//composer.addPass(pixelPass);
 
 
 
 
-const ttfLoader = new TTFLoader()
-const fontLoader = new FontLoader();
-				ttfLoader.load( 'fonts/Yerk-Italic.ttf', function( fnt) {
-
-					const font = fontLoader.parse(fnt)
-
-					const geometry = new TextGeometry( 'Lil Data... AG COOK... EASYFUN... CARO<3', {
-						font: font,
-						size: 50,
-						height: 1,
-						curveSegments: 12,
-						bevelEnabled: true,
-						bevelThickness: 0.02,
-						bevelSize: 0.01,
-						bevelOffset: 0,
-						bevelSegments: 5,
-					} );
-
-					geometry.rotateX( Math.PI );
-
-					const material = new THREE.MeshBasicMaterial( {
-						color: 0x00ffff,
-						//wireframe: true
-					} );
-
-					const objectToCurve = new THREE.Mesh( geometry, material );
-
-					flow = new Flow( objectToCurve );
-					flow.updateCurve( 0, curve );
-					scene.add( flow.object3D );
-
-				} );
 
 
 
@@ -400,6 +788,24 @@ const fontLoader = new FontLoader();
 					}
 
 				} );
+
+
+
+				const matChanger = function ( ) {
+
+bokehPass.uniforms[ 'focus' ].value = params.focus;
+bokehPass.uniforms[ 'aperture' ].value = params.aperture * 0.00001;
+bokehPass.uniforms[ 'maxblur' ].value = params.maxblur;
+
+};
+
+const gui = new GUI();
+gui.add( params, 'focus', 10.0, 3000.0, 10 ).onChange( matChanger );
+gui.add( params, 'aperture', 0, 10, 0.1 ).onChange( matChanger );
+gui.add( params, 'maxblur', 0.0, 0.01, 0.001 ).onChange( matChanger );
+gui.close();
+
+matChanger();
 
 
 
@@ -429,18 +835,21 @@ mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
 				requestAnimationFrame( animate );
 
+				stats.begin();
 				const time = - performance.now() * 0.0003;
 				
 				uniforms.dT.value = clock.getDelta();
    			 uniforms.time.value += uniforms.dT.value;
 
-				camera.position.x = 100 * Math.cos( time );
-				camera.position.z = 400;//* Math.sin( time );
+				camera.position.x = 40 * Math.cos( time * 10 );// - 100;
+				camera.position.z = 1000;//* Math.sin( time );
 				camera.lookAt( scene.position );
 
-				light.position.x = Math.sin( time * 1.7 ) * 300;
-				light.position.y = Math.cos( time * 1.5 ) * 400;
-				light.position.z = Math.cos( time * 1.3 ) * 300;
+				//light.position.x = Math.sin( time * 1.7 ) * 30;
+				//light.position.y = Math.cos( time * 1.5 ) * 40;
+				//light.position.z = Math.cos( time * 1.3 ) * 30;
+
+				spiralGeo.rotation.y += .03;
 
 				//if ( vnh ) vnh.update();
 				//if ( vth ) vth.update();
@@ -470,6 +879,9 @@ flow.moveAlongCurve( -0.001 );
 }
 
 				composer.render();
+
+				
+				stats.end();
 
 			}
 

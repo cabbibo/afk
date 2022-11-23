@@ -61,9 +61,9 @@ void main(){
   vec3 mat = texture2D( t_matcap , semLookup( rd , fNorm , modelViewMatrix , normalMatrix ) ).xyz;
 
 
-  col.xyz = hsv( _Hue, 1.,1.) * mat;// * audio.xyz;//mat;
+  //col.xyz = hsv( _Hue, 1.,1.) * mat;// * audio.xyz;//mat;
   //col += fNorm * .5 + .5;
-
+  col.xyz = hsv(  _Hue, 1.,1.);
 
   gl_FragColor = vec4( col , 1. );
 
