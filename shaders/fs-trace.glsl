@@ -63,13 +63,16 @@ void main(){
   if( sin(vNoiseVal * 20. ) < _DiscardAmount ){
     //discard;
   }
-  col.xyz = hsv( vMPos.x , 1,1);//hsv( _HueStart + _HueSize * vNoiseVal * _NoiseOffset * 10., _Saturation,_Lightness) * mat;// * audio.xyz;//mat;
+ 
+ 
+ 
+  col.xyz = hsv( _HueStart + _HueSize * vNoiseVal * _NoiseOffset * 10., _Saturation,_Lightness) * mat;// * audio.xyz;//mat;
   //col += fNorm * .5 + .5;
 
 
 
 
-  gl_FragColor = vec4( col , 1. );
+  gl_FragColor = vec4( col , .3 );
 
 }
 

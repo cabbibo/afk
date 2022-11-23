@@ -124,10 +124,10 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 
 			addLoad();
 
+			shaders.load( 'fs-trace3'  , 'trace2' , 'fragment' );
+shaders.load( 'vs-trace2'  , 'trace2' , 'vertex'   );
 shaders.load( 'fs-trace'  , 'trace' , 'fragment' );
 shaders.load( 'vs-trace'  , 'trace' , 'vertex'   );
-shaders.load( 'fs-trace3'  , 'trace2' , 'fragment' );
-shaders.load( 'vs-trace2'  , 'trace2' , 'vertex'   );
 shaders.load( 'vs-gradient'  , 'gradient' , 'vertex'   );
 shaders.load( 'fs-gradient'  , 'gradient' , 'fragment'   );
 
@@ -205,7 +205,7 @@ const fontLoader = new FontLoader();
 	var afkModel;
 
 	addLoad();
-	objLoader.load( 'afk_loPoly.obj', function ( gltf ) {
+	objLoader.load( 'img/afk_lowerCase2.obj', function ( gltf ) {
 		onLoad();
 		afkModel = gltf.children[ 0 ];
 
@@ -226,7 +226,7 @@ onLoad();
 var tubeModel;
 
 addLoad();
-objLoader.load( 'img/longTube.obj', function ( gltf ) {
+objLoader.load( 'img/longBoy.obj', function ( gltf ) {
 
 console.log("hiii");
 
@@ -291,16 +291,16 @@ time:     { type:"f"  , value : 0             },
 lightPos: { type:"v3" , value : null          },
 t_matcap: { type:"t", value: matcap},
 
-_NoiseSize:{type:"f",value:3},
+_NoiseSize:{type:"f",value:3.4},
 _NoiseSpeed:{type:"f",value:.5},
-_NoiseOffset:{type:"f",value:0.1},
-_HueStart:{type:"f",value:.5},
+_NoiseOffset:{type:"f",value:.2},
+_HueStart:{type:"f",value:.1},
 _HueSize:{type:"f",value:.01},
 _NormalDepth:{type:"f",value:1.1},
 _FFTStart:{type:"f",value:.1},
 _FFTSize:{type:"f",value:.1},
-_Saturation:{type:"f",value:1.1},
-_Lightness:{type:"f",value:3},
+_Saturation:{type:"f",value:.8},
+_Lightness:{type:"f",value:.3},
 _DiscardAmount:{type:"f",value:.9}
 
 }
@@ -464,13 +464,33 @@ let fontGeo2;
 				// To make sure that the matrixWorld is up to date for the boxhelpers
 				group.updateMatrixWorld( true );
 
+
+
+				var raytraceMat2 = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: shaders.vs.trace2,
+        fragmentShader: shaders.fs.trace2,
+        side: THREE.DoubleSide,
+		depthTest: false,
+		//wireframe : true,
+      })
+		var pretty  =new THREE.Mesh( tubeModel.geometry , raytraceMat2 );
+		
+		var s = 4;
+		pretty.position.y = -30;
+		pretty.scale.set(s,s,s);
+		group.add(pretty);
+
 				var raytraceMat = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: shaders.vs.trace,
         fragmentShader: shaders.fs.trace,
         side: THREE.DoubleSide,
 		//depthTest: false,
-		//wireframe : true,
+		wireframe : true,
+		transparent: true,
+		opacity:.5,
+		//blending:THREE.AdditiveBlending,
       })
 
 	 // var curve1 = new Curves.GrannyKnot(.1);
@@ -479,22 +499,7 @@ let fontGeo2;
 	  let tubeGeometry = new THREE.TubeGeometry( curve,1000, .01, 3 );
 
 
-	  	var pretty  =new THREE.Mesh( tubeGeometry , matte);
-		
-		pretty.rotation.x = .4;
-		pretty.rotation.y = .3;
-		pretty.position.x = 1;
-		var s = .5;
-		pretty.scale.set(s,s,s);
-
-		spiralGeo = pretty;
-
-
-		//group.add(pretty);
-				
-
-
-		var s2 = new THREE.ShaderMaterial({
+	  var s2 = new THREE.ShaderMaterial({
     uniforms: {
       uColorA: { value: new THREE.Color(1,.8,1) },
       uColorB: { value: new THREE.Color(1,.8,0) }
@@ -503,43 +508,40 @@ let fontGeo2;
         fragmentShader: shaders.fs.gradient
   })
 
-  var raytraceMat2 = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: shaders.vs.trace2,
-        fragmentShader: shaders.fs.trace2,
-        side: THREE.DoubleSide,
-		//depthTest: false,
-		//wireframe : true,
-      })
-		var pretty  =new THREE.Mesh( tubeModel.geometry , raytraceMat2 );
+
+	  	var pretty  =new THREE.Mesh( tubeGeometry , matte);
 		
-		var s = 2;
-		pretty.position.y = 0;
-		pretty.scale.set(s,s,s);
-		group.add(pretty);
-
-		
-
-
-
-
-
-		var pretty  =new THREE.Mesh( tubeGeometry , matte);
-		
-		pretty.rotation.x = -.4;
-		pretty.rotation.y = -.3;
-		pretty.position.x = -1;
+		pretty.rotation.x = .4;
+		pretty.rotation.y = .3;
+		pretty.position.x = 2;
 		var s = .5;
 		pretty.scale.set(s,s,s);
 
 		spiralGeo = pretty;
 
 
-		//group.add(pretty);
+		group.add(pretty);
+				
+
+
+
+	
+		var pretty  =new THREE.Mesh( tubeGeometry , matte);
+		
+		pretty.rotation.x = .7;
+		pretty.rotation.y = .3;
+		pretty.position.x = -2;
+		var s = .5;
+		pretty.scale.set(s,s,s);
+
+		spiralGeo = pretty;
+
+
+		group.add(pretty);
 
 		for( var i = 0; i < 20; i++){
 					
-		var pretty  =new THREE.Mesh( tubeGeometry , matte);
+		var pretty  =new THREE.Mesh( tubeGeometry , raytraceMat);
 		
 		pretty.rotation.x = (Math.random()-.5) * 100;
 		pretty.rotation.y = (Math.random()-.5) * 100;;
@@ -554,7 +556,7 @@ let fontGeo2;
 		//spiralGeo = pretty;
 
 
-	//	group.add(pretty);
+	//group.add(pretty);
 		}
 				
 
@@ -566,7 +568,7 @@ let fontGeo2;
 		pretty.position.z = 2;
 		pretty.position.y = -8;
 
-		group.add(pretty);
+		//group.add(pretty);
 
 
 
@@ -582,7 +584,7 @@ let fontGeo2;
 		pretty.scale.set( s,s,s);
 		pretty.position.z = 1.5;
 		pretty.position.y = -1;
-		group.add(pretty);
+		//group.add(pretty);
 
 
 		var light = new THREE.DirectionalLight( 0xffffff, 1 );
@@ -621,7 +623,7 @@ light.shadow.camera.far = 500; // default
 		pretty.position.x =  (Math.random()-.5) * 1 * pretty.position.y;;
 		pretty.position.z = (Math.random()-.5) * 1 * pretty.position.y-1;
 
-		group.add(pretty);
+		//group.add(pretty);
 
 		}
 
@@ -640,7 +642,7 @@ light.shadow.camera.far = 500; // default
 		pretty.position.x =  (Math.random()-.5) * 1 * pretty.position.y;;
 		pretty.position.z = 2;//(Math.random()-.5) * 1 * pretty.position.y-1;
 
-		group.add(pretty);
+		//group.add(pretty);
 
 		}
 
@@ -652,10 +654,10 @@ light.shadow.camera.far = 500; // default
 				var pretty = new THREE.Mesh( afkModel.geometry , new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)}));
 				//group.add( pretty );
 
-
-				var pretty = new THREE.Mesh( fontGeo2, raytraceMat);
-				pretty.position.x = -2;
-				//group.add( pretty );
+				console.log(afkModel.geometry);
+				var pretty = new THREE.Mesh( afkModel.geometry , raytraceMat);
+				//pretty.position.y = 5;
+				group.add( pretty );
 
 				if (!pretty.customDepthMaterial) {
 					pretty.customDepthMaterial = new THREE.MeshDepthMaterial({
@@ -686,7 +688,7 @@ light.shadow.camera.far = 500; // default
 				pretty.position.y = 4;
 				pretty.position.z = 1;
 				pretty.scale.set(1,1,1)
-				group.add(pretty);
+				//group.add(pretty);
 
 		
 
@@ -841,8 +843,8 @@ mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 				uniforms.dT.value = clock.getDelta();
    			 uniforms.time.value += uniforms.dT.value;
 
-				camera.position.x = 40 * Math.cos( time * 10 );// - 100;
-				camera.position.z = 1000;//* Math.sin( time );
+				camera.position.x = 0 * Math.cos( time * 1 );// - 100;
+				camera.position.z = 400;//* Math.sin( time );
 				camera.lookAt( scene.position );
 
 				//light.position.x = Math.sin( time * 1.7 ) * 30;
