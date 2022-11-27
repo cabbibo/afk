@@ -66,13 +66,13 @@ void main(){
  
  
  
-  col.xyz = hsv( _HueStart + _HueSize * vNoiseVal * _NoiseOffset * 10., _Saturation,_Lightness) * mat;// * audio.xyz;//mat;
+  col.xyz = hsv( _HueStart + _HueSize * vNoiseVal * _NoiseOffset * 1000., _Saturation,_Lightness);// * mat;// * audio.xyz;//mat;
   //col += fNorm * .5 + .5;
 
 
 
 
-  gl_FragColor = vec4( col , .3 );
+  gl_FragColor = vec4( col , 1 );
 
 }
 

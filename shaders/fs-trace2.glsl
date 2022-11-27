@@ -63,7 +63,7 @@ void main(){
 
   //col.xyz = hsv( _Hue, 1.,1.) * mat;// * audio.xyz;//mat;
   //col += fNorm * .5 + .5;
-  col.xyz = hsv(  _Hue, 1.,1.);
+  col.xyz = hsv(  .5, 1.,1.);
 
   gl_FragColor = vec4( col , 1. );
 

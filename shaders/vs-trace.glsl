@@ -31,7 +31,18 @@ $noise
 vec4 newPos( vec3 pos, vec3 nor ){
 
   float n = snoise( pos  * _NoiseSize + vec3(0.,0.,1.) * _NoiseSpeed * time );
-  return vec4( pos + nor * n* _NoiseOffset , n );
+
+
+n = floor( n * _NoiseOffset * 10. ) / 10.;
+
+  vec3 fPos = nor * n;
+  //fPos.x = floor( fPos.x * 10. )/10.;
+  //fPos.y = floor( fPos.y * 10. )/10.;
+  //fPos.z = floor( fPos.z * 10. )/10.;
+
+
+
+  return vec4( pos + fPos, n );
 
 }
 

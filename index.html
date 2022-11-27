@@ -4,26 +4,83 @@
 		<title>three.js webgl - helpers</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
+		<!--<link type="text/css" rel="stylesheet" href="main.css">-->
 		<style>
-			#info > * {
-				max-width: 650px;
+
+#info {
+	position: absolute;
+	bottom: 10px;
+	right: 20px;
+	width: 100%;
+	float:right;
+	text-align:right;
+	z-index: 1;
+			//	margin-left: auto;
+			//	margin-right: auto;
+			}
+
+
+			#lineup {
+	position: absolute;
+	top: 10px;
+	left: 20px;
+	width: 100%;
+	float:left;
+	text-align:left;
+	z-index: 1;
 				margin-left: auto;
 				margin-right: auto;
 			}
+					
+					
+			
+			@font-face {
+			font-family: "ft88";
+			src: "FT88-Expanded.ttf";
+			}
 
-			body{
-			//background-image: linear-gradient(red, yellow);
-			background:#ff0000;
+			body {
+				margin: 0;
+				color: #fff;
+				width:100%;
+				font-size: 13px;
+				line-height: 24px;
+				overscroll-behavior: none;
+				background-image: linear-gradient(red, yellow);
+				font-family: "ft88";
+				overflow:hidden;
+			}
+
+			#renderer{
+				margin:0px;
+				height:100%;
+				width:100%;
+				left:0px;
+				position:absolute;
+			}
+
+			#stats{
+				bottom:0px;
+				position:absolute;
 			}
 			</style>
 	</head>
 	<body>
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - helpers
+
+		<div id="lineup">
+			<a href="https://threejs.org" target="_blank">AG Cook</a><br/>
+			<a href="https://threejs.org" target="_blank">ö</a><br/>
+			<a href="https://threejs.org" target="_blank">Alex Somers</a><br/>
+
 		</div>
 
+		<div id="info">
+			<a href="https://threejs.org" target="_blank">twitch.tv/pcmusic</a><br/>
+			<a href="https://threejs.org" target="_blank">Dec 11th</a><br/>
+			<a href="https://threejs.org" target="_blank">5PM EST</a><br/>
 
+			
+		</div>
 		<script src="lib/jquery.min.js"></script>
 		<!-- Import maps polyfill -->
 		<!-- Remove this when import maps will be widely supported -->
@@ -37,6 +94,7 @@
 				}
 			}
 		</script>
+
 
 
 
@@ -226,7 +284,7 @@ onLoad();
 var tubeModel;
 
 addLoad();
-objLoader.load( 'img/longBoy.obj', function ( gltf ) {
+objLoader.load( 'cone.obj', function ( gltf ) {
 
 console.log("hiii");
 
@@ -291,20 +349,22 @@ time:     { type:"f"  , value : 0             },
 lightPos: { type:"v3" , value : null          },
 t_matcap: { type:"t", value: matcap},
 
-_NoiseSize:{type:"f",value:3.4},
-_NoiseSpeed:{type:"f",value:.5},
-_NoiseOffset:{type:"f",value:.2},
+_NoiseSize:{type:"f",value:.4},
+_NoiseSpeed:{type:"f",value:.2},
+_NoiseOffset:{type:"f",value:.3},
 _HueStart:{type:"f",value:.1},
-_HueSize:{type:"f",value:.01},
+_HueSize:{type:"f",value:.0004},
 _NormalDepth:{type:"f",value:1.1},
 _FFTStart:{type:"f",value:.1},
 _FFTSize:{type:"f",value:.1},
-_Saturation:{type:"f",value:.8},
-_Lightness:{type:"f",value:.3},
+_Saturation:{type:"f",value:.6},
+_Lightness:{type:"f",value:0},
 _DiscardAmount:{type:"f",value:.9}
 
 }
 
+
+var lorenz
 const params = {
 				exposure: 0,
 				bloomStrength:.3,
@@ -354,12 +414,15 @@ let fontGeo2;
 				renderer = new THREE.WebGLRenderer( { alpha: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.domElement.id = "renderer";
 				//renderer.info.alpha = true;
 				document.body.appendChild( renderer.domElement );
 				
 
 				
 				stats = new Stats();
+				stats.dom.id = "stats";
+				stats.dom.style = "";
 				document.body.appendChild( stats.dom );
 
 
@@ -368,7 +431,7 @@ let fontGeo2;
 
 				//
 
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 4, 4000 );
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 4, 40000 );
 				camera.position.z = 800;
 
 				scene = new THREE.Scene();
@@ -384,7 +447,7 @@ let fontGeo2;
 
 				var size = 1;
 
-				const initialPoints = []
+				var initialPoints = []
 				for( var i = 0; i < 100; i++ ){
 
 
@@ -398,6 +461,27 @@ let fontGeo2;
 						x: -Math.cos( angle ) * radius,
 						z: Math.sin(angle) * radius,
 						y: i * height - 1
+					}
+					initialPoints.push(p);
+
+				}
+
+
+				
+				var initialPoints = []
+				for( var i = 0; i < 10; i++ ){
+
+
+					var angle = (i /10)* 2 * Math.PI;
+					var radius = 2 ;
+					var height = .01;
+
+					
+
+					var p = {
+						x: -Math.cos( angle ) * radius,
+						z: Math.sin(angle) * radius,
+						y: 0
 					}
 					initialPoints.push(p);
 
@@ -429,9 +513,9 @@ let fontGeo2;
 					curveHandles.map( ( handle ) => handle.position )
 				);
 				curve.curveType = 'centripetal';
-				curve.closed = false//true;
+				curve.closed = true;
 
-				const points = curve.getPoints( 50 );
+				const points = curve.getPoints( 20 );
 				const line = new THREE.LineLoop(
 					new THREE.BufferGeometry().setFromPoints( points ),
 					new THREE.LineBasicMaterial( { color: 0x00ff00 } )
@@ -463,7 +547,57 @@ let fontGeo2;
 
 				// To make sure that the matrixWorld is up to date for the boxhelpers
 				group.updateMatrixWorld( true );
+				var lor = []
 
+let x0 = 0.1;
+let y0 = 0;
+let z0 = 0; 
+let x1, y1, z1;
+let h = 0.001;
+let a = 10.0;
+let b = 28.0;
+let c = 7.0 / 3.0;
+
+
+var len = 100000;
+for (let i = 0; i < len; i++) {
+x1 = x0 + h * a * (y0 - x0);
+y1 = y0 + h * (x0 * (b - z0) - y0);
+z1 = z0 + h * (x0 * y0 - c * z0);
+x0 = x1;
+y0 = y1;
+z0 = z1;
+let vertex = new THREE.Vector3(
+ x0, 
+ y0, 
+ z0-24);
+lor.push(vertex);
+}
+   var curve2 = new THREE.CatmullRomCurve3(lor
+		   );
+		   curve2.curveType = 'centripetal';
+		   curve2.closed = false;
+
+
+
+		   var matte = new THREE.MeshBasicMaterial({
+			color: new THREE.Color(0,0,0), 
+			transparent:true,
+			opacity: .3
+		});
+var tubeGeometry2 = new THREE.TubeGeometry( curve2,10000, .1, 3 );
+
+	 var pretty  =new THREE.Mesh( tubeGeometry2 , matte);
+   
+   pretty.rotation.z = Math.PI / 2;
+   //pretty.rotation.y = 1;
+   pretty.position.y = -4;
+   var s = .1;
+   pretty.scale.set(s,s,s);
+
+   lorenz = pretty;
+
+   group.add(pretty);
 
 
 				var raytraceMat2 = new THREE.ShaderMaterial({
@@ -471,32 +605,29 @@ let fontGeo2;
         vertexShader: shaders.vs.trace2,
         fragmentShader: shaders.fs.trace2,
         side: THREE.DoubleSide,
-		depthTest: false,
+		//depthTest: false,
 		//wireframe : true,
       })
+
+
+
 		var pretty  =new THREE.Mesh( tubeModel.geometry , raytraceMat2 );
 		
-		var s = 4;
-		pretty.position.y = -30;
-		pretty.scale.set(s,s,s);
+		var s = 10;
+		pretty.position.y = 1;
+		pretty.rotation.x = Math.PI;
+		pretty.scale.set(s,s*10,s);
 		group.add(pretty);
 
-				var raytraceMat = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: shaders.vs.trace,
-        fragmentShader: shaders.fs.trace,
-        side: THREE.DoubleSide,
-		//depthTest: false,
-		wireframe : true,
-		transparent: true,
-		opacity:.5,
-		//blending:THREE.AdditiveBlending,
-      })
+
+
+
+
 
 	 // var curve1 = new Curves.GrannyKnot(.1);
-
+/*
 	 var matte = new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)});
-	  let tubeGeometry = new THREE.TubeGeometry( curve,1000, .01, 3 );
+	  let tubeGeometry = new THREE.TubeGeometry( curve,100, .01, 3 );
 
 
 	  var s2 = new THREE.ShaderMaterial({
@@ -507,8 +638,6 @@ let fontGeo2;
         vertexShader: shaders.vs.gradient,
         fragmentShader: shaders.fs.gradient
   })
-
-
 	  	var pretty  =new THREE.Mesh( tubeGeometry , matte);
 		
 		pretty.rotation.x = .4;
@@ -520,7 +649,7 @@ let fontGeo2;
 		spiralGeo = pretty;
 
 
-		group.add(pretty);
+		//group.add(pretty);
 				
 
 
@@ -537,158 +666,42 @@ let fontGeo2;
 		spiralGeo = pretty;
 
 
-		group.add(pretty);
-
-		for( var i = 0; i < 20; i++){
-					
-		var pretty  =new THREE.Mesh( tubeGeometry , raytraceMat);
-		
-		pretty.rotation.x = (Math.random()-.5) * 100;
-		pretty.rotation.y = (Math.random()-.5) * 100;;
-
-		
-		pretty.position.x = (Math.random()-.5) * 10;
-		pretty.position.y = (Math.random()-.5) * 10;;
-		pretty.position.z = -1;
-		var s = .2 + Math.random() * .2;
-		pretty.scale.set(s,s,s);
-
-		//spiralGeo = pretty;
-
-
-	//group.add(pretty);
-		}
-				
-
-
-		var pretty = new THREE.Mesh( rockModel.geometry , new THREE.MeshBasicMaterial({map:diffuseRock}));
-		pretty.rotation.x = -Math.PI * .5;
-		s =3
-		pretty.scale.set( s,s,s);
-		pretty.position.z = 2;
-		pretty.position.y = -8;
-
 		//group.add(pretty);
 
+*/
 
 
-						
 
 
-		var pretty = new THREE.Mesh( computerModel.geometry , new THREE.MeshBasicMaterial({color:0xffddaa}));
-		var pretty2 = new THREE.Mesh( computerModel.geometry , new THREE.MeshBasicMaterial({color:0x000000,wireframe:true}));
-		pretty.add(pretty2)
-		pretty.rotation.x = -Math.PI * .5;
-		pretty.rotation.y = Math.PI * .5;
-		s =5
-		pretty.scale.set( s,s,s);
-		pretty.position.z = 1.5;
-		pretty.position.y = -1;
-		//group.add(pretty);
-
-
-		var light = new THREE.DirectionalLight( 0xffffff, 1 );
-light.position.set( 0, 1, 0 ); //default; light shining from top
-light.castShadow = true; // default false
-scene.add( light );
-
-//Set up shadow properties for the light
-light.shadow.mapSize.width = 512; // default
-light.shadow.mapSize.height = 512; // default
-light.shadow.camera.near = 0.5; // default
-light.shadow.camera.far = 500; // default
-
-
-		var fernMaterial = new THREE.MeshStandardMaterial();
-
-		fernMaterial.map = diffuseFern;
-		fernMaterial.normalMap = normalFern;
-		fernMaterial.castShadow = true;
-		fernMaterial.receiveShadow = true;
-
-		var fM = fernMaterial;//new THREE.MeshBasicMaterial({map:diffuseFern});	 
-		var matte2 = new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0),wireframe:true});
-		for( var i = 0; i < 20; i++ ){
-		var pretty = new THREE.Mesh( fernModel.geometry , fM);
-		var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
 
 		
-		//var pretty = new THREE.Mesh( fernModel.geometry , matte2);
-		//var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
-		//pretty.add(pretty2);
-		//pretty.rotation.x = -Math.PI * .5;
-		s =.1 + Math.random() * .2;
-		pretty.scale.set( s,s,s);
-		pretty.position.y= -(Math.random()) * 30 -3 ;
-		pretty.position.x =  (Math.random()-.5) * 1 * pretty.position.y;;
-		pretty.position.z = (Math.random()-.5) * 1 * pretty.position.y-1;
-
-		//group.add(pretty);
-
-		}
-
-		for( var i = 0; i < 50; i++ ){
-		var pretty = new THREE.Mesh( fernModel.geometry , fM);
-		var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
-
-		
-		//var pretty = new THREE.Mesh( fernModel.geometry , matte2);
-		//var pretty2 = new THREE.Mesh( fernModel.geometry ,matte2);
-		//pretty.add(pretty2);
-		pretty.rotation.x = -Math.PI * .5;
-		s =.1 + Math.random() * .2;
-		pretty.scale.set( s,s,s);
-		pretty.position.y= -(Math.random()) * 30 ;
-		pretty.position.x =  (Math.random()-.5) * 1 * pretty.position.y;;
-		pretty.position.z = 2;//(Math.random()-.5) * 1 * pretty.position.y-1;
-
-		//group.add(pretty);
-
-		}
 
 
 
-				var pretty = new THREE.Mesh( afkModel.geometry , matte);
+var raytraceMat = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: shaders.vs.trace,
+        fragmentShader: shaders.fs.trace,
+       // side: THREE.DoubleSide,
+		//depthTest: false,
+		wireframe : true,
+		//transparent: true,
+		//opacity:.5,
+		//blending:THREE.AdditiveBlending,
+      })
+
+				/*var pretty = new THREE.Mesh( afkModel.geometry , matte);
 				//group.add( pretty );
 
 				var pretty = new THREE.Mesh( afkModel.geometry , new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)}));
-				//group.add( pretty );
+				//group.add( pretty );*/
 
-				console.log(afkModel.geometry);
 				var pretty = new THREE.Mesh( afkModel.geometry , raytraceMat);
 				//pretty.position.y = 5;
 				group.add( pretty );
 
-				if (!pretty.customDepthMaterial) {
-					pretty.customDepthMaterial = new THREE.MeshDepthMaterial({
-                  depthPacking: THREE.RGBADepthPacking,
-                 // map: m.map,
-                  alphaTest: 0.5
-                });
-              }
-              if (!pretty.customDistanceMaterial) {
-                pretty.customDistanceMaterial = new THREE.MeshDistanceMaterial({
-                  //depthPacking: THREE.RGBADepthPacking,
-                 // map: m.map,
-                  alphaTest: 0.5
-                });
-              }
+			
 
-				var pretty = new THREE.Mesh( fontGeo ,matte);
-				pretty.position.x =1.5;
-				pretty.rotation.z = Math.PI * .5;
-				pretty.position.y = 2;
-				pretty.position.z = .8;
-				pretty.scale.set(4,4,4)
-				//group.add(pretty);
-
-
-				var pretty = new THREE.Mesh( fontGeo2 ,matte);
-				pretty.position.x = -1.4;
-				pretty.position.y = 4;
-				pretty.position.z = 1;
-				pretty.scale.set(1,1,1)
-				//group.add(pretty);
 
 		
 
@@ -696,10 +709,7 @@ light.shadow.camera.far = 500; // default
 				var myGradient = new THREE.Mesh(
   new THREE.PlaneGeometry(20,20,1,1),
   new THREE.ShaderMaterial({
-    uniforms: {
-      uColorA: { value: new THREE.Color(1,.8,1) },
-      uColorB: { value: new THREE.Color(1,.8,0) }
-    },
+    uniforms: uniforms,
         vertexShader: shaders.vs.gradient,
         fragmentShader: shaders.fs.gradient
   })
@@ -710,32 +720,9 @@ myGradient.renderOrder = -99999
 myGradient.position.x = 100
 
 scene.add(myGradient);
-				//group.remove(pretty);
-
-			//	vth = new VertexTangentsHelper( afkModel, 5 );
-			//	scene.add( vth );
-
-				//scene.add( new THREE.BoxHelper( afkModel ) );
-
-				const wireframe = new THREE.WireframeGeometry( afkModel.geometry );
-				let line3 = new THREE.LineSegments( wireframe );
-				line3.material.depthTest = false;
-				line3.material.opacity = 1;
-				line3.material.color = new Color(111,111,111);
-				//line.material.transparent = true;
-				//line.position;
-				//group.add( line );
 
 
-				const wireframe2 = new THREE.WireframeGeometry( afkModel.geometry );
-				let line2 = new THREE.Mesh( wireframe2,raytraceMat );
-				line.material.depthTest = false;
-				line.material.opacity = 1;
-				line.material.color = new Color(111,111,111);
-				//line.material.transparent = true;
-				//line.position;
-				//group.add( line );
-				//
+			
 
 				window.addEventListener( 'resize', onWindowResize );
 
@@ -758,7 +745,7 @@ const halftonePass = new HalftonePass( window.innerWidth, window.innerHeight, pa
 
 const bokehPass = new BokehPass( scene, camera, params);
 
-const effectFilm = new FilmPass( 0.35, .1, 10, false );
+const effectFilm = new FilmPass( 0.35, .01, 1, false );
 
 composer = new EffectComposer( renderer );
 composer.addPass( renderScene );
@@ -800,12 +787,12 @@ bokehPass.uniforms[ 'aperture' ].value = params.aperture * 0.00001;
 bokehPass.uniforms[ 'maxblur' ].value = params.maxblur;
 
 };
-
+/*
 const gui = new GUI();
 gui.add( params, 'focus', 10.0, 3000.0, 10 ).onChange( matChanger );
 gui.add( params, 'aperture', 0, 10, 0.1 ).onChange( matChanger );
 gui.add( params, 'maxblur', 0.0, 0.01, 0.001 ).onChange( matChanger );
-gui.close();
+gui.close();*/
 
 matChanger();
 
@@ -843,7 +830,7 @@ mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 				uniforms.dT.value = clock.getDelta();
    			 uniforms.time.value += uniforms.dT.value;
 
-				camera.position.x = 0 * Math.cos( time * 1 );// - 100;
+				camera.position.x =100 * Math.cos( time * 1 );// - 100;
 				camera.position.z = 400;//* Math.sin( time );
 				camera.lookAt( scene.position );
 
@@ -851,7 +838,7 @@ mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 				//light.position.y = Math.cos( time * 1.5 ) * 40;
 				//light.position.z = Math.cos( time * 1.3 ) * 30;
 
-				spiralGeo.rotation.y += .03;
+			//	spiralGeo.rotation.y += .03;
 
 				//if ( vnh ) vnh.update();
 				//if ( vth ) vth.update();
@@ -874,12 +861,10 @@ if ( intersects.length ) {
 
 }
 
-if ( flow ) {
 
-flow.moveAlongCurve( -0.001 );
+//lorenz.rotation.y += .001;
 
-}
-
+lorenz.rotation.z = .3* Math.cos( time * 3 ) + Math.PI / 2;
 				composer.render();
 
 				
