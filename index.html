@@ -4,6 +4,7 @@
 		<title>three.js webgl - helpers</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/woff" crossorigin>
 		<!--<link type="text/css" rel="stylesheet" href="main.css">-->
 		<style>
 
@@ -133,50 +134,19 @@ import {
 	Ray,
 	Vector3,
 	Color,
-	TextureLoader
 } from 'three';
 
 import{ ShaderLoader } from './lib/ShaderLoader.js';
 
 			import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-			import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-
-			import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
-			import { VertexTangentsHelper } from 'three/addons/helpers/VertexTangentsHelper.js';
 
 			import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 			import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-			import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 			
-			import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
-			
-			import { AfterimagePass } from 'three/addons/postprocessing/AfterimagePass.js';
 
 			import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-			import { HalftonePass } from 'three/addons/postprocessing/HalftonePass.js';
-
 			
 			import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
-			import { DotScreenPass } from 'three/addons/postprocessing/DotScreenPass.js';
-			import { TexturePass } from 'three/addons/postprocessing/TexturePass.js';
-
-			import { BleachBypassShader } from 'three/addons/shaders/BleachBypassShader.js';
-			import { ColorifyShader } from 'three/addons/shaders/ColorifyShader.js';
-			import { HorizontalBlurShader } from 'three/addons/shaders/HorizontalBlurShader.js';
-			import { VerticalBlurShader } from 'three/addons/shaders/VerticalBlurShader.js';
-			import { SepiaShader } from 'three/addons/shaders/SepiaShader.js';
-			import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
-			import { GammaCorrectionShader } from 'three/addons/shaders/GammaCorrectionShader.js';
-			import { BokehShader, BokehDepthShader } from 'three/addons/shaders/BokehShader2.js';
-			
-			import { PixelShader } from 'three/addons/shaders/PixelShader.js';
-
-			import { TransformControls } from 'three/addons/controls/TransformControls.js';
-			import { Flow } from 'three/addons/modifiers/CurveModifier.js';
-			import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-			import { TTFLoader } from 'three/addons/loaders/TTFLoader.js';
-			import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-
 
 			import * as Curves from 'three/addons/curves/CurveExtras.js';
 			
@@ -225,59 +195,9 @@ shaders.shaderSetLoaded = function(){
 
 
 
-var textureLoader = new TextureLoader();
-	addLoad();
-  var matcap = textureLoader.load('img/rough-aluminium.jpg',function ( texture ) {
-    onLoad();
-  });
 
 
 
-
-
-addLoad();
-  const ttfLoader = new TTFLoader()
-const fontLoader = new FontLoader();
-				ttfLoader.load( 'fonts/FT88-Expanded.ttf', function( fnt) {
-
-					const font = fontLoader.parse(fnt)
-
-					var geometry = new TextGeometry( 'away from keyboard', {
-						font: font,
-						size: .04,
-						height: .01,
-						curveSegments: 12,
-						bevelEnabled: false,
-						bevelThickness: 0.00,
-						bevelSize: 0.01,
-						bevelOffset: 0,
-						bevelSegments: 5,
-					} );
-
-					geometry.rotateX( Math.PI  * -.5);
-
-					fontGeo = geometry;
-
-
-					var geometry = new TextGeometry( 'AFK', {
-						font: font,
-						size: .5,
-						height: .1,
-						curveSegments: 12,
-						bevelEnabled: true,
-						bevelThickness: 0.02,
-						bevelSize: 0.01,
-						bevelOffset: 0,
-						bevelSegments: 5,
-					} );
-
-					geometry.rotateX( Math.PI  * -.5);
-
-					fontGeo2 = geometry;
-
-					onLoad();
-
-				} );
 
 
 
@@ -323,7 +243,6 @@ onLoad();
 dT:       { type:"f"  , value : 0             },
 time:     { type:"f"  , value : 0             },
 lightPos: { type:"v3" , value : null          },
-t_matcap: { type:"t", value: matcap},
 
 _NoiseSize:{type:"f",value:.27},
 _NoiseSpeed:{type:"f",value:.35},
@@ -703,23 +622,7 @@ scene.add(myGradient);
 
 				const renderScene = new RenderPass( scene, camera );
 
-const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 100.5, 0.4, 10.85 );
-bloomPass.threshold = params.bloomThreshold;
-bloomPass.strength = params.bloomStrength;
-bloomPass.radius = params.bloomRadius;
 
-
-pixelPass = new ShaderPass( PixelShader );
-				pixelPass.uniforms[ 'resolution' ].value = new THREE.Vector2( window.innerWidth, window.innerHeight );
-				pixelPass.uniforms[ 'resolution' ].value.multiplyScalar( window.devicePixelRatio );
-
-
-
-				var afterimagePass = new AfterimagePass();
-				afterimagePass.uniforms.damp.value = .1;
-const halftonePass = new HalftonePass( window.innerWidth, window.innerHeight, params );
-
-const bokehPass = new BokehPass( scene, camera, params);
 
 const effectFilm = new FilmPass( 0.35, .01, 1, false );
 
@@ -739,25 +642,7 @@ composer.addPass( renderScene );
 
 
 
-
-				renderer.domElement.addEventListener( 'pointerdown', onPointerDown );
-				
-				rayCaster = new THREE.Raycaster();
-				control = new TransformControls( camera, renderer.domElement );
-				control.addEventListener( 'dragging-changed', function ( event ) {
-
-					if ( ! event.value ) {
-
-						const points = curve.getPoints( 50 );
-
-						//console.log(points);
-						line.geometry.setFromPoints( points );
-						flow.updateCurve( 0, curve );
-
-					}
-
-				} );
-
+			
 
 
 				const matChanger = function ( ) {
@@ -846,13 +731,7 @@ gui.close();
 
 			}
 
-			function onPointerDown( event ) {
 
-action = ACTION_SELECT;
-mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-}
 
 			function animate() {
 
@@ -888,20 +767,6 @@ mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 				curveRep.position.copy( c);
 				uniforms._TargetPos.value.copy(c);
 
-				if ( action === ACTION_SELECT ) {
-
-rayCaster.setFromCamera( mouse, camera );
-action = ACTION_NONE;
-const intersects = rayCaster.intersectObjects( curveHandles, false );
-if ( intersects.length ) {
-
-	const target = intersects[ 0 ].object;
-	control.attach( target );
-	scene.add( control );
-
-}
-
-}
 
 
 //lorenz.rotation.y += .001;
