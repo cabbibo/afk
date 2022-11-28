@@ -41,7 +41,7 @@
 
 			body {
 				margin: 0;
-				color: #fff;
+				color: #000;
 				width:100%;
 				font-size: 13px;
 				line-height: 24px;
@@ -49,7 +49,26 @@
 				background-image: linear-gradient(red, yellow);
 				font-family: "ft88";
 				overflow:hidden;
+				
 			}
+
+			a{
+				color:#fff;
+			}
+			a:visited{
+				color:#fff;
+			}
+			a:hover{
+				color:#000;
+			}
+			.lil-gui { 
+	--width: 500px;
+	--name-width: 15%;
+	--font-family:"ft88";
+	--background: #f00;
+
+}
+
 
 			#renderer{
 				margin:0px;
@@ -62,25 +81,28 @@
 			#stats{
 				bottom:0px;
 				position:absolute;
+				font-family:"ft88";
 			}
 			</style>
 	</head>
 	<body>
 
 		<div id="lineup">
-			<a href="https://threejs.org" target="_blank">AG Cook</a><br/>
-			<a href="https://threejs.org" target="_blank">ö</a><br/>
 			<a href="https://threejs.org" target="_blank">Alex Somers</a><br/>
+			<a href="https://threejs.org" target="_blank">AG Cook</a><br/>
+			<a href="https://threejs.org" target="_blank">umru</a><br/>
+			<a href="https://threejs.org" target="_blank">ö</a><br/>
 
 		</div>
 
 		<div id="info">
-			<a href="https://threejs.org" target="_blank">twitch.tv/pcmusic</a><br/>
-			<a href="https://threejs.org" target="_blank">Dec 11th</a><br/>
 			<a href="https://threejs.org" target="_blank">5PM EST</a><br/>
+			<a href="https://threejs.org" target="_blank">Dec 11th</a><br/>
+			<a href="https://threejs.org" target="_blank">twitch.tv/pcmusic</a><br/>
 
 			
 		</div>
+
 		<script src="lib/jquery.min.js"></script>
 		<!-- Import maps polyfill -->
 		<!-- Remove this when import maps will be widely supported -->
@@ -127,6 +149,8 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 			import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 			
 			import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+			
+			import { AfterimagePass } from 'three/addons/postprocessing/AfterimagePass.js';
 
 			import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 			import { HalftonePass } from 'three/addons/postprocessing/HalftonePass.js';
@@ -174,6 +198,8 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 				let stats;
 
 
+
+				let curveRep;
 			var neededToLoad = 0;
 			var numLoaded = 0;
 
@@ -205,10 +231,6 @@ var textureLoader = new TextureLoader();
     onLoad();
   });
 
-  addLoad();
-  var diffuseRock = textureLoader.load('img/Textures_8K/WallRock_Diffuse_8K.jpg',function ( texture ) {
-    onLoad();
-  });
 
 
 
@@ -271,13 +293,6 @@ const fontLoader = new FontLoader();
 
 	var rockModel;
 
-	addLoad();
-	objLoader.load( 'img/WallRock_obj/WallRock_obj.obj', function ( gltf ) {
-
-rockModel = gltf.children[ 0 ];
-onLoad();
-
-} );
 
 
 
@@ -294,50 +309,11 @@ onLoad();
 
 } );
 
-var fernModel;
-
-addLoad();
-objLoader.load( 'img/matteucia_struthiopteris_loPoly.obj', function ( gltf ) {
-
-fernModel = gltf.children[ 0 ];
-onLoad();
-
-} );
 
 
 
-var computerModel;
-
-addLoad();
-objLoader.load( 'img/computerOBJ.obj', function ( gltf ) {
-
-computerModel = gltf.children[ 0 ];
-onLoad();
-
-} );
 
 
-addLoad();
-  var diffuseFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_1_01_diffuse.jpg',function ( texture ) {
-    onLoad();
-  });
-
-  addLoad();
-  var normalFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_1_04_normal.jpg',function ( texture ) {
-    onLoad();
-  });
-
-
-  addLoad();
-  var specularFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_1_02_specular.jpg',function ( texture ) {
-    onLoad();
-  });
-
-
-  addLoad();
-  var bumpFern = textureLoader.load('img/msMaps/matteuccia_struthiopteris_leaf_bump.jpg',function ( texture ) {
-    onLoad();
-  });
 
 
 
@@ -349,41 +325,81 @@ time:     { type:"f"  , value : 0             },
 lightPos: { type:"v3" , value : null          },
 t_matcap: { type:"t", value: matcap},
 
-_NoiseSize:{type:"f",value:.4},
-_NoiseSpeed:{type:"f",value:.2},
-_NoiseOffset:{type:"f",value:.3},
+_NoiseSize:{type:"f",value:.27},
+_NoiseSpeed:{type:"f",value:.35},
+_NoiseOffset:{type:"f",value:.1},
 _HueStart:{type:"f",value:.1},
-_HueSize:{type:"f",value:.0004},
+_HueSize:{type:"f",value:.0021},
 _NormalDepth:{type:"f",value:1.1},
 _FFTStart:{type:"f",value:.1},
 _FFTSize:{type:"f",value:.1},
-_Saturation:{type:"f",value:.6},
-_Lightness:{type:"f",value:0},
-_DiscardAmount:{type:"f",value:.9}
+_Saturation:{type:"f",value:.4},
+_Lightness:{type:"f",value:1},
+_DiscardAmount:{type:"f",value:.9},
+_TargetPos:{type:"v3",value: new THREE.Vector3()},
+
+_Opacity:{type:"f",value:.1},
+_OffsetStepResolution:{type:"f",value:1},
+_OpacityFalloffSpeed:{type:"f",value:2},
+_GravitySize:{type:"f",value:50},
+
+_BGHueMin : {type:"f",value:0.1, min: 0, max:1},
+_BGHueMax : {type:"f",value:.15, min: 0, max:1},
+_BGHueSize : {type:"f",value:10, min: 0, max:100},
+_BGHueSpeed : {type:"f",value:11, min: 0, max:11},
+_BGSaturationMin : {type:"f",value:.25, min: 0, max:1},
+_BGSaturationMax : {type:"f",value:.3, min: 0, max:1},
+_BGSaturationSize : {type:"f",value:15.8, min: 0, max:100},
+_BGSaturationSpeed : {type:"f",value:10, min: 0, max:100},
+_BGLightnessMin : {type:"f",value:0, min: 0, max:1},
+_BGLightnessMax : {type:"f",value:.1, min: 0, max:1},
+_BGLightnessSize : {type:"f",value:8, min: 0, max:100},
+_BGLightnessSpeed : {type:"f",value:4, min: 0, max:100}
 
 }
 
 
+
+var lorenzParams = {
+		x0: 0.1,
+		y0: 0,
+		z0: 0, 
+		h : 0.001,
+		a :19	,
+		b : 58,
+		c : 1.6,
+		startY:.1,
+		scale: 3.5,
+		yOffset:120,
+		thickness:.5,
+		opacity:.3,
+		wireframe:false
+
+  }
+
 var lorenz
 const params = {
 				exposure: 0,
-				bloomStrength:.3,
-				bloomThreshold: 0,
-				bloomRadius: 0,	shape: 1,
-					radius: 4,
+				bloomStrength:5,
+				bloomThreshold: .4,
+				bloomRadius: 1,	
+
+
+				shape: 10,
+					radius: 1,
 					rotateR: Math.PI / 12,
-					rotateB: Math.PI / 12 * 2,
-					rotateG: Math.PI / 12 * 3,
-					scatter: 0,
+					rotateB: Math.PI / 12 * 4,
+					rotateG: Math.PI / 12 * 6,
+					scatter: .3,
 					blending: 1,
-					blendingMode: 1,
+					blendingMode: 9,
 					greyscale: false,
 					disable: false,
 					pixelSize: 2,
 					postprocessing: true,
 					
-					focus: 400.0,
-					aperture: 5,
+					focus: 200.0,
+					aperture: 10,
 					maxblur: 0.01
 
 					
@@ -396,6 +412,7 @@ var clock = new THREE.Clock();
 var spiralGeo;
 let fontGeo;
 let fontGeo2;
+let lorenzCurve;
 
 			//init();
 			//animate();
@@ -441,7 +458,7 @@ let fontGeo2;
 				//light.position.set( 200, 100, 150 );
 				//scene.add( light );
 
-				//scene.add( new THREE.PointLightHelper( light, 20 ) );
+			
 
 
 
@@ -545,60 +562,17 @@ let fontGeo2;
 				scene.add( group );
 				//group.add( line );
 
+
+				var boxGeometry1 = new THREE.IcosahedronGeometry( 2,1);
+				var boxMaterial1 = new THREE.MeshBasicMaterial({color:0x000000,wireframe:true});
+				curveRep = new THREE.Mesh( boxGeometry1, boxMaterial1 );
+				scene.add( curveRep );
+
 				// To make sure that the matrixWorld is up to date for the boxhelpers
 				group.updateMatrixWorld( true );
-				var lor = []
+	
 
-let x0 = 0.1;
-let y0 = 0;
-let z0 = 0; 
-let x1, y1, z1;
-let h = 0.001;
-let a = 10.0;
-let b = 28.0;
-let c = 7.0 / 3.0;
-
-
-var len = 100000;
-for (let i = 0; i < len; i++) {
-x1 = x0 + h * a * (y0 - x0);
-y1 = y0 + h * (x0 * (b - z0) - y0);
-z1 = z0 + h * (x0 * y0 - c * z0);
-x0 = x1;
-y0 = y1;
-z0 = z1;
-let vertex = new THREE.Vector3(
- x0, 
- y0, 
- z0-24);
-lor.push(vertex);
-}
-   var curve2 = new THREE.CatmullRomCurve3(lor
-		   );
-		   curve2.curveType = 'centripetal';
-		   curve2.closed = false;
-
-
-
-		   var matte = new THREE.MeshBasicMaterial({
-			color: new THREE.Color(0,0,0), 
-			transparent:true,
-			opacity: .3
-		});
-var tubeGeometry2 = new THREE.TubeGeometry( curve2,10000, .1, 3 );
-
-	 var pretty  =new THREE.Mesh( tubeGeometry2 , matte);
-   
-   pretty.rotation.z = Math.PI / 2;
-   //pretty.rotation.y = 1;
-   pretty.position.y = -4;
-   var s = .1;
-   pretty.scale.set(s,s,s);
-
-   lorenz = pretty;
-
-   group.add(pretty);
-
+				SetNewLorenz();
 
 				var raytraceMat2 = new THREE.ShaderMaterial({
         uniforms: uniforms,
@@ -682,10 +656,10 @@ var raytraceMat = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: shaders.vs.trace,
         fragmentShader: shaders.fs.trace,
-       // side: THREE.DoubleSide,
-		//depthTest: false,
+        side: THREE.DoubleSide,
+		depthTest: false,
 		wireframe : true,
-		//transparent: true,
+		transparent: true,
 		//opacity:.5,
 		//blending:THREE.AdditiveBlending,
       })
@@ -729,7 +703,7 @@ scene.add(myGradient);
 
 				const renderScene = new RenderPass( scene, camera );
 
-const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 100.5, 0.4, 10.85 );
 bloomPass.threshold = params.bloomThreshold;
 bloomPass.strength = params.bloomStrength;
 bloomPass.radius = params.bloomRadius;
@@ -741,6 +715,8 @@ pixelPass = new ShaderPass( PixelShader );
 
 
 
+				var afterimagePass = new AfterimagePass();
+				afterimagePass.uniforms.damp.value = .1;
 const halftonePass = new HalftonePass( window.innerWidth, window.innerHeight, params );
 
 const bokehPass = new BokehPass( scene, camera, params);
@@ -749,8 +725,12 @@ const effectFilm = new FilmPass( 0.35, .01, 1, false );
 
 composer = new EffectComposer( renderer );
 composer.addPass( renderScene );
-//composer.addPass( bloomPass );
-composer.addPass(effectFilm);
+//composer.addPass(bloomPass);
+//composer.addPass( halftonePass );
+//composer.addPass(effectFilm);
+
+//composer.addPass( afterimagePass );
+
 //composer.addPass( bokehPass );
 //composer.addPass(pixelPass);
 
@@ -770,7 +750,7 @@ composer.addPass(effectFilm);
 
 						const points = curve.getPoints( 50 );
 
-						console.log(points);
+						//console.log(points);
 						line.geometry.setFromPoints( points );
 						flow.updateCurve( 0, curve );
 
@@ -787,14 +767,68 @@ bokehPass.uniforms[ 'aperture' ].value = params.aperture * 0.00001;
 bokehPass.uniforms[ 'maxblur' ].value = params.maxblur;
 
 };
-/*
-const gui = new GUI();
-gui.add( params, 'focus', 10.0, 3000.0, 10 ).onChange( matChanger );
-gui.add( params, 'aperture', 0, 10, 0.1 ).onChange( matChanger );
-gui.add( params, 'maxblur', 0.0, 0.01, 0.001 ).onChange( matChanger );
-gui.close();*/
 
-matChanger();
+const gui = new GUI();
+
+
+//gui.add( params, 'maxblur', 0.0, 0.01, 0.001 ).onChange( matChanger );
+
+
+var text = gui.addFolder("TEXT")
+
+text.add( uniforms._NoiseOffset, 'value', 0, 2. ).name( 'Noise Offset' )
+text.add( uniforms._NoiseSize, 'value', 0, 10. ).name( 'Noise Size' )
+text.add( uniforms._NoiseSpeed, 'value', 0, 2. ).name( 'Noise Speed' )
+text.add( uniforms._HueStart, 'value', 0, 1. ).name( '_HueStart' )
+text.add( uniforms._HueSize, 'value', 0, .01 ).name( '_HueSize' )
+text.add( uniforms._Saturation, 'value', 0, 1 ).name( '_Saturation' )
+text.add( uniforms._Lightness, 'value', 0, 1 ).name( '_Lightness' )
+text.add( uniforms._Opacity, 'value', 0, 1 ).name( '_Opacity' )
+text.add( uniforms._OffsetStepResolution, 'value', 0, 1000).name( '_OffsetStepResolution' )
+text.add( uniforms._OpacityFalloffSpeed, 'value', 0, 1000 ).name( '_OpacityFalloffSpeed' )
+text.add( uniforms._GravitySize, 'value', 0, 1000 ).name( '_GravitySize' )
+
+text.close()
+
+var background = gui.addFolder("BACKGROUND")
+
+
+
+background.add( uniforms._BGHueMin, 'value',uniforms._BGHueMin.min, uniforms._BGHueMin.max).name('_BGHueMin');
+background.add( uniforms._BGHueMax, 'value',uniforms._BGHueMax.min, uniforms._BGHueMax.max).name('_BGHueMax');
+background.add( uniforms._BGHueSize, 'value',uniforms._BGHueSize.min, uniforms._BGHueSize.max).name('_BGHueSize');
+background.add( uniforms._BGHueSpeed, 'value', uniforms._BGHueSpeed.min, uniforms._BGHueSpeed.max).name('_BGHueSpeed');
+background.add( uniforms._BGSaturationMin, 'value', uniforms._BGSaturationMin.min, uniforms._BGSaturationMin.max).name('_BGSaturationMin');
+background.add( uniforms._BGSaturationMax, 'value', uniforms._BGSaturationMax.min, uniforms._BGSaturationMax.max).name('_BGSaturationMax');
+background.add( uniforms._BGSaturationSize, 'value', uniforms._BGSaturationSize.min, uniforms._BGSaturationSize.max).name('_BGSaturationSize');
+background.add( uniforms._BGSaturationSpeed, 'value', uniforms._BGSaturationSpeed.min, uniforms._BGSaturationSpeed.max).name('_BGSaturationSpeed');
+background.add( uniforms._BGLightnessMin, 'value', uniforms._BGLightnessMin.min, uniforms._BGLightnessMin.max).name('_BGLightnessMin');
+background.add( uniforms._BGLightnessMax, 'value',uniforms._BGLightnessMax.min, uniforms._BGLightnessMax.max).name('_BGLightnessMax');
+background.add( uniforms._BGLightnessSize, 'value',uniforms._BGLightnessSize.min, uniforms._BGLightnessSize.max).name('_BGLightnessSize');
+background.add( uniforms._BGLightnessSpeed, 'value', uniforms._BGLightnessSpeed.min, uniforms._BGLightnessSpeed.max).name('_BGLightnessSpeed');
+
+
+background.close();
+
+var lorenzGUI = gui.addFolder("lorenz")
+
+lorenzGUI.add( lorenzParams, 'a', 0, 40. ).name( 'a' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'b', 0, 80. ).name( 'b' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'c', 0, 3. ).name( 'c' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'scale', 0, 30. ).name( 'scale' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'x0', 0, 3. ).name( 'x0' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'y0', 0, 3. ).name( 'y0' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'z0', 0, 3. ).name( 'z0' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'yOffset', 0, 300. ).name( 'yOffset' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'thickness', 0, 10. ).name( 'thickness' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'opacity', 0, 1. ).name( 'opacity' ).onChange( SetNewLorenz )
+lorenzGUI.add( lorenzParams, 'wireframe' ).name( 'wireframe' ).onChange( SetNewLorenz )
+lorenzGUI.close();
+let preset = {};
+
+gui.close();
+
+
 
 
 
@@ -828,7 +862,7 @@ mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 				const time = - performance.now() * 0.0003;
 				
 				uniforms.dT.value = clock.getDelta();
-   			 uniforms.time.value += uniforms.dT.value;
+   			 	uniforms.time.value += uniforms.dT.value;
 
 				camera.position.x =100 * Math.cos( time * 1 );// - 100;
 				camera.position.z = 400;//* Math.sin( time );
@@ -845,6 +879,14 @@ mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
 				//renderer.render( scene, camera );
 
+
+				lorenz.updateMatrixWorld(true)
+
+				var c = lorenzCurve.getPointAt(Math.sin( time * .02) * .5 + .5 );
+				//console.log(lorenz.matrix);
+				c.applyMatrix4(lorenz.matrix);
+				curveRep.position.copy( c);
+				uniforms._TargetPos.value.copy(c);
 
 				if ( action === ACTION_SELECT ) {
 
@@ -864,7 +906,7 @@ if ( intersects.length ) {
 
 //lorenz.rotation.y += .001;
 
-lorenz.rotation.z = .3* Math.cos( time * 3 ) + Math.PI / 2;
+//lorenz.rotation.z = .3* Math.cos( time * 3 ) + Math.PI / 2;
 				composer.render();
 
 				
@@ -886,6 +928,89 @@ lorenz.rotation.z = .3* Math.cos( time * 3 ) + Math.PI / 2;
     }
   }
 
+
+
+
+  function SetNewLorenz(){
+
+	console.log("THIS HAPPENEd");
+	var lor = []
+
+let x0 = lorenzParams.x0;
+let y0 = lorenzParams.y0;
+let z0 = lorenzParams.z0; 
+let x1, y1, z1;
+let h = lorenzParams.h;
+let a = lorenzParams.a;
+let b = lorenzParams.b;
+let c = lorenzParams.c;
+
+
+var len = 100000;
+for (let i = 0; i < len; i++) {
+x1 = x0 + h * a * (y0 - x0);
+y1 = y0 + h * (x0 * (b - z0) - y0);
+z1 = z0 + h * (x0 * y0 - c * z0);
+x0 = x1;
+y0 = y1;
+z0 = z1;
+let vertex = new THREE.Vector3(
+ x0, 
+ y0, 
+ z0-24);
+lor.push(vertex);
+}
+
+
+var lorGroup = new THREE.Group();
+
+lorGroup.rotation.x = Math.PI / 2;
+lorGroup.rotation.z = Math.PI / 2;
+//lorGroup.rotation.x = 3.14159/2
+lorGroup.position.y = lorenzParams.yOffset;
+var s = lorenzParams.scale;
+lorGroup.scale.set(s,s,s);
+
+
+//group.add(lorGroup);;
+
+lorGroup.updateMatrixWorld( true );
+//console.log(lor.length);
+
+
+for( let i = 0; i < lor.length; i++ ){
+	lor[i] = lor[i].applyMatrix4( lorGroup.matrix );
+}
+
+
+   var curve2 = new THREE.CatmullRomCurve3(lor
+		   );
+		   curve2.curveType = 'centripetal';
+		   curve2.closed = false;
+
+
+
+		   var matte = new THREE.MeshBasicMaterial({
+			color: new THREE.Color(0,0,0), 
+			transparent:true,
+			opacity: lorenzParams.opacity,
+			wireframe: lorenzParams.wireframe
+		});
+
+		lorenzCurve = curve2;
+
+var tubeGeometry2 = new THREE.TubeGeometry( curve2,10000, lorenzParams.thickness, 3 );
+
+	 var pretty  =new THREE.Mesh( tubeGeometry2 , matte);
+   
+if( lorenz ){
+	scene.remove(lorenz);
+}
+
+   lorenz = pretty;
+
+   scene.add(pretty);
+  }
 
 		</script>
 

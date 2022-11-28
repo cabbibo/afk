@@ -44,6 +44,9 @@ uniform float _NoiseOffset;
 uniform float _NormalDepth;
 uniform float _DiscardAmount;
 
+uniform float _Opacity;
+uniform float _OpacityFalloffSpeed;
+
 void main(){
 
   vec3 fNorm = uvNormalMap( t_normal , vPos , vUv , vNorm , 4.   , .5 * _NormalDepth);
@@ -69,10 +72,15 @@ void main(){
   col.xyz = hsv( _HueStart + _HueSize * vNoiseVal * _NoiseOffset * 1000., _Saturation,_Lightness);// * mat;// * audio.xyz;//mat;
   //col += fNorm * .5 + .5;
 
+  float multiplier = clamp(1./abs(vNoiseVal *_OpacityFalloffSpeed),0.,1.);
+  col *= multiplier;
 
 
 
-  gl_FragColor = vec4( col , 1 );
+
+
+
+  gl_FragColor = vec4( clamp(col,vec3(0.),vec3(1.)) ,_Opacity * multiplier );
 
 }
 

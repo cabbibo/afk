@@ -20,6 +20,11 @@ uniform float time;
 uniform float _FFTSize;
 uniform float _FFTStart;
 
+uniform vec3 _TargetPos;
+
+
+uniform float _GravitySize;
+uniform float _OffsetStepResolution;
 
 
 uniform sampler2D t_audio;
@@ -33,12 +38,14 @@ vec4 newPos( vec3 pos, vec3 nor ){
   float n = snoise( pos  * _NoiseSize + vec3(0.,0.,1.) * _NoiseSpeed * time );
 
 
-n = floor( n * _NoiseOffset * 10. ) / 10.;
+n = floor( n * _NoiseOffset * _OffsetStepResolution ) / _OffsetStepResolution;
 
   vec3 fPos = nor * n;
   //fPos.x = floor( fPos.x * 10. )/10.;
   //fPos.y = floor( fPos.y * 10. )/10.;
   //fPos.z = floor( fPos.z * 10. )/10.;
+
+
 
 
 
@@ -81,21 +88,24 @@ void main(){
   vNorm = newNor(position,normal,vec3(0.,1.,0.));
 
 
-  float n = snoise( vPos  * _NoiseSize + vec3(0.,0.,1.) * _NoiseSpeed * time );
-
-  
-
-  vNoiseVal = newPosVal.w;//n * .5 + .5;
-
-
+  vNoiseVal = newPosVal.w;
 
   vMNorm = normalMatrix * normal;
-  vMPos = (modelMatrix * vec4( position , 1. )).xyz;
+  vMPos = (modelMatrix * vec4( vPos , 1. )).xyz;
+
+  float pullLength = _GravitySize;
+
+  if( length( vMPos.xy - _TargetPos.xy) < pullLength ){
+
+    float d =  (pullLength - length( vMPos.xy - _TargetPos.xy) )/pullLength;
+    vMPos = mix( vMPos,_TargetPos,d);
+  }
+
 
   //vLight = ( iModelMat * vec4(  vec3( 400. , 1000. , 400. ) , 1. ) ).xyz;
 
 
   // Use this position to get the final position 
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( vPos , 1.);
+  gl_Position = projectionMatrix *viewMatrix* vec4( vMPos , 1.);
 
 }

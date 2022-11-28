@@ -45,6 +45,22 @@ uniform float _NormalDepth;
 uniform float _DiscardAmount;
 uniform float _Hue;
 
+
+uniform float _BGHueMin;
+uniform float _BGHueMax;
+uniform float _BGHueSize;
+uniform float _BGHueSpeed;
+
+uniform float _BGSaturationMin;
+uniform float _BGSaturationMax;
+uniform float _BGSaturationSize;
+uniform float _BGSaturationSpeed;
+
+uniform float _BGLightnessMin;
+uniform float _BGLightnessMax;
+uniform float _BGLightnessSize;
+uniform float _BGLightnessSpeed;
+
 void main(){
 
   vec3 fNorm = vNorm;//uvNormalMap( t_normal , vPos , vUv , vNorm , 4.   , .5 * _NormalDepth);
@@ -61,9 +77,13 @@ void main(){
   vec3 mat = texture2D( t_matcap , semLookup( rd , fNorm , modelViewMatrix , normalMatrix ) ).xyz;
 
 
+
+float hue = mix( _BGHueMin, _BGHueMax , sin( vMPos.z * _BGHueSize * .0001 - time * _BGHueSpeed) * .5 + .5);
+float sat = mix( _BGSaturationMin, _BGSaturationMax , sin( vMPos.z * _BGSaturationSize * .0001 - time * _BGSaturationSpeed)* .5 + .5);
+float lig = mix( _BGLightnessMin, _BGLightnessMax , sin( vMPos.z * _BGLightnessSize * .0001 - time * _BGLightnessSpeed)* .5 + .5);
   //col.xyz = hsv( _Hue, 1.,1.) * mat;// * audio.xyz;//mat;
   //col += fNorm * .5 + .5;
-  col.xyz = hsv( vMPos.z * .00003 + .1, sin( vMPos.z * .0005- time * 10. ) * .1 + .3,.8) * ( sin( vMPos.z * .0000-time * 1.) * .04 + .8);
+  col.xyz = hsv( hue, sat, lig);
 
   gl_FragColor = vec4( col , 1. );
 
