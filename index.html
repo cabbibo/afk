@@ -52,22 +52,22 @@
 				font-size: 13px;
 				line-height: 24px;
 				overscroll-behavior: none;
-				background:#fff;
+				background:#feffe4;
 				font-family: "ft88";
 				overflow:hidden;
 				
 			}
 
 			a{
-				color:#000;
+				color:rgba(0, 0, 0, 0.5);
 				text-decoration: none;
 			}
 			a:visited{
-				color:#000;
+				color:rgba(0, 0, 0, 0.5);
 				text-decoration: none;
 			}
 			a:hover{
-				color:#fff;
+				color:#000;
 			}
 			.lil-gui { 
 	--width: 500px;
@@ -95,10 +95,11 @@
 			#loadBar{
 				width: 0%;
 				left:0px;
-				height:30px;
+				height:20px;
 				position:fixed;
 				top:50%;
-				background:rgb(254, 233, 163);
+				//background:rgb(0, 0, 0);
+				border-bottom:#000 1px solid;
 				z-index: 9999;
 			}
 
@@ -110,6 +111,14 @@
   left: 50%;
   transform: translate(-50%, -50%);
 			}
+
+			#imgLinks{
+				position:fixed;
+				bottom:0px;
+				left:10px;
+				width:100px;
+				z-index:9999;
+			}
 			</style>
 	</head>
 	<body>
@@ -119,7 +128,7 @@
 		<div id="lineup">
 
 
-			<a href="https://threejs.org" target="_blank">
+			<a href="https://www.twitch.tv/pcmusicinfo" target="_blank">
 				Ö<br/>
 				A. G. Cook<br/>
 				Alex Somers<br/>
@@ -135,7 +144,7 @@
 		</div>
 
 		<div id="info">
-			<a href="https://threejs.org" target="_blank">
+			<a href="https://www.twitch.tv/pcmusicinfo" target="_blank">
 
 				2pm LA<br/> 5pm NY <br/> 10pm London<br/>
 				December 11th<br/>
@@ -143,6 +152,11 @@
 			</a>
 			
 			
+		</div>
+
+		<div id="imgLinks">
+			<a href="https://youtu.be/qPfSV6Bvfzk" style="width:100%;"><img src="img/hyperNormality_1.png" style="width:40%;"/></a>
+			<a href="https://pcmusic.bandcamp.com/" style="width:100%;"><img src="img/xcx.png" style="width:40%;"/></a>
 		</div>
 
 		<script src="lib/jquery.min.js"></script>
@@ -328,8 +342,8 @@ _BGSaturationMin : {type:"f",value:.25, min: 0, max:1},
 _BGSaturationMax : {type:"f",value:.3, min: 0, max:1},
 _BGSaturationSize : {type:"f",value:15.8, min: 0, max:100},
 _BGSaturationSpeed : {type:"f",value:10, min: 0, max:100},
-_BGLightnessMin : {type:"f",value:0.8, min: 0, max:1},
-_BGLightnessMax : {type:"f",value:1, min: 0, max:1},
+_BGLightnessMin : {type:"f",value:0.7, min: 0, max:1},
+_BGLightnessMax : {type:"f",value:.9, min: 0, max:1},
 _BGLightnessSize : {type:"f",value:8, min: 0, max:100},
 _BGLightnessSpeed : {type:"f",value:4, min: 0, max:100}
 
@@ -598,35 +612,18 @@ scene.add(myGradient);
 
 
 
-const effectFilm = new FilmPass( 0.35, 0.025, 648, false );
+const effectFilm = new FilmPass( .5, 0.005, -648, false );
 
 composer = new EffectComposer( renderer );
 composer.addPass( renderScene );
-//composer.addPass(bloomPass);
-//composer.addPass( halftonePass );
 composer.addPass(effectFilm);
 
-//composer.addPass( afterimagePass );
-
-//composer.addPass( bokehPass );
-//composer.addPass(pixelPass);
 
 
 
 
 
-
-			
-
-
-				const matChanger = function ( ) {
-
-bokehPass.uniforms[ 'focus' ].value = params.focus;
-bokehPass.uniforms[ 'aperture' ].value = params.aperture * 0.00001;
-bokehPass.uniforms[ 'maxblur' ].value = params.maxblur;
-
-};
-
+		
 /*
 
 const gui = new GUI();
@@ -774,8 +771,10 @@ gui.close();
 var loadBar = document.getElementById("loadBar");
 var lineup = document.getElementById("lineup");
 var info = document.getElementById("info");
+var imgLinks = document.getElementById("imgLinks");
 	info.style.visibility = "hidden";
 	lineup.style.visibility = "hidden";
+	imgLinks.style.visibility = "hidden";
 
 function setLoadBar(){
 
@@ -822,6 +821,7 @@ var fullStart = function(){
 
 	info.style.visibility = "visible";
 	lineup.style.visibility = "visible";
+	imgLinks.style.visibility = "visible";
 	openFullscreen(document.body);
 	animate();
 }
