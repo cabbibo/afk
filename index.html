@@ -52,7 +52,7 @@
 				font-size: 13px;
 				line-height: 24px;
 				overscroll-behavior: none;
-				background:#e9d1af;
+				background:#fff;
 				font-family: "ft88";
 				overflow:hidden;
 				
@@ -246,12 +246,6 @@ shaders.endLoad = function(){
 
 
 
-var lockFunction =  window.screen.orientation.lock;
-if (lockFunction.call(window.screen.orientation, 'landscape')) {
-           console.log('Orientation locked')
-} else {
-            console.error('There was a problem in locking the orientation')
-}
 
 function openFullscreen(elem) {
   if (elem.requestFullscreen) {
@@ -818,6 +812,14 @@ var doClick = function(){
 }
 
 var fullStart = function(){
+	
+	var lockFunction =  window.screen.orientation.lock;
+	if (lockFunction.call(window.screen.orientation, 'landscape')) {
+			//console.log('Orientation locked')
+	} else {
+			//console.error('There was a problem in locking the orientation')
+	}
+
 	info.style.visibility = "visible";
 	lineup.style.visibility = "visible";
 	openFullscreen(document.body);
