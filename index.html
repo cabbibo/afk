@@ -4,7 +4,7 @@
 		<title>three.js webgl - helpers</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/woff" crossorigin>
+		<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/ttf" crossorigin>
 		<!--<link type="text/css" rel="stylesheet" href="main.css">-->
 		<style>
 
@@ -33,11 +33,16 @@
 				margin-right: auto;
 			}
 					
+
+			#lineup:a{
+
+				display:block;
+			}
 					
 			
 			@font-face {
 			font-family: "ft88";
-			src: "FT88-Expanded.ttf";
+			src: url("fonts/FT88-Expanded.ttf");
 			}
 
 			body {
@@ -47,20 +52,22 @@
 				font-size: 13px;
 				line-height: 24px;
 				overscroll-behavior: none;
-				background-image: linear-gradient(red, yellow);
+				background:#e9d1af;
 				font-family: "ft88";
 				overflow:hidden;
 				
 			}
 
 			a{
-				color:#fff;
+				color:#000;
+				text-decoration: none;
 			}
 			a:visited{
-				color:#fff;
+				color:#000;
+				text-decoration: none;
 			}
 			a:hover{
-				color:#000;
+				color:#fff;
 			}
 			.lil-gui { 
 	--width: 500px;
@@ -84,23 +91,57 @@
 				position:absolute;
 				font-family:"ft88";
 			}
+
+			#loadBar{
+				width: 0%;
+				left:0px;
+				height:30px;
+				position:fixed;
+				top:50%;
+				background:rgb(254, 233, 163);
+				z-index: 9999;
+			}
+
+			#startButton{
+				color:#000;
+				position: absolute;
+				text-decoration: underline;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+			}
 			</style>
 	</head>
 	<body>
 
-		<div id="lineup">
-			<a href="https://threejs.org" target="_blank">Alex Somers</a><br/>
-			<a href="https://threejs.org" target="_blank">AG Cook</a><br/>
-			<a href="https://threejs.org" target="_blank">umru</a><br/>
-			<a href="https://threejs.org" target="_blank">ö</a><br/>
+		<div id="loadBar"></div>
 
+		<div id="lineup">
+
+
+			<a href="https://threejs.org" target="_blank">
+				Ö<br/>
+				A. G. Cook<br/>
+				Alex Somers<br/>
+				BASECK<br/>
+				BOPPLES<br/>
+				caro<3<br/>
+				Holly Waxwing<br/>
+				Kai Whiston<br/>
+				Lecx Stacy<br/>
+				Regina Demina<br/>
+				Timothée Joly<br/>
+			</a>
 		</div>
 
 		<div id="info">
-			<a href="https://threejs.org" target="_blank">5PM EST</a><br/>
-			<a href="https://threejs.org" target="_blank">Dec 11th</a><br/>
-			<a href="https://threejs.org" target="_blank">twitch.tv/pcmusic</a><br/>
+			<a href="https://threejs.org" target="_blank">
 
+				2pm LA<br/> 5pm NY <br/> 10pm London<br/>
+				December 11th<br/>
+				twitch.tv/pcmusicinfo
+			</a>
+			
 			
 		</div>
 
@@ -150,8 +191,8 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 
 			import * as Curves from 'three/addons/curves/CurveExtras.js';
 			
-			import Stats from 'three/addons/libs/stats.module.js';
-			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+			//import Stats from 'three/addons/libs/stats.module.js';
+			//import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 			const ACTION_SELECT = 1, ACTION_NONE = 0;
 			const curveHandles = [];
 			const mouse = new THREE.Vector2();
@@ -178,26 +219,49 @@ import{ ShaderLoader } from './lib/ShaderLoader.js';
 
 			addLoad();
 
+			addLoad();
 			shaders.load( 'fs-trace3'  , 'trace2' , 'fragment' );
-shaders.load( 'vs-trace2'  , 'trace2' , 'vertex'   );
-shaders.load( 'fs-trace'  , 'trace' , 'fragment' );
-shaders.load( 'vs-trace'  , 'trace' , 'vertex'   );
-shaders.load( 'vs-gradient'  , 'gradient' , 'vertex'   );
-shaders.load( 'fs-gradient'  , 'gradient' , 'fragment'   );
 
+			addLoad();
+shaders.load( 'vs-trace2'  , 'trace2' , 'vertex'   );
+
+addLoad();
+shaders.load( 'fs-trace'  , 'trace' , 'fragment' );
+
+addLoad();
+shaders.load( 'vs-trace'  , 'trace' , 'vertex'   );
+addLoad();
+shaders.load( 'vs-gradient'  , 'gradient' , 'vertex'   );
+addLoad();
+shaders.load( 'fs-gradient'  , 'gradient' , 'fragment'   );
 
 shaders.shaderSetLoaded = function(){
 
 	console.log("LOADED");
   onLoad();
 }
+shaders.endLoad = function(){
+	onLoad();
+}
 
 
 
+var lockFunction =  window.screen.orientation.lock;
+if (lockFunction.call(window.screen.orientation, 'landscape')) {
+           console.log('Orientation locked')
+} else {
+            console.error('There was a problem in locking the orientation')
+}
 
-
-
-
+function openFullscreen(elem) {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
 
 
 
@@ -253,7 +317,7 @@ _NormalDepth:{type:"f",value:1.1},
 _FFTStart:{type:"f",value:.1},
 _FFTSize:{type:"f",value:.1},
 _Saturation:{type:"f",value:.4},
-_Lightness:{type:"f",value:1},
+_Lightness:{type:"f",value:.3},
 _DiscardAmount:{type:"f",value:.9},
 _TargetPos:{type:"v3",value: new THREE.Vector3()},
 
@@ -262,16 +326,16 @@ _OffsetStepResolution:{type:"f",value:1},
 _OpacityFalloffSpeed:{type:"f",value:2},
 _GravitySize:{type:"f",value:50},
 
-_BGHueMin : {type:"f",value:0.1, min: 0, max:1},
-_BGHueMax : {type:"f",value:.15, min: 0, max:1},
+_BGHueMin : {type:"f",value:0.08, min: 0, max:1},
+_BGHueMax : {type:"f",value:.1, min: 0, max:1},
 _BGHueSize : {type:"f",value:10, min: 0, max:100},
 _BGHueSpeed : {type:"f",value:11, min: 0, max:11},
 _BGSaturationMin : {type:"f",value:.25, min: 0, max:1},
 _BGSaturationMax : {type:"f",value:.3, min: 0, max:1},
 _BGSaturationSize : {type:"f",value:15.8, min: 0, max:100},
 _BGSaturationSpeed : {type:"f",value:10, min: 0, max:100},
-_BGLightnessMin : {type:"f",value:0, min: 0, max:1},
-_BGLightnessMax : {type:"f",value:.1, min: 0, max:1},
+_BGLightnessMin : {type:"f",value:0.8, min: 0, max:1},
+_BGLightnessMax : {type:"f",value:1, min: 0, max:1},
 _BGLightnessSize : {type:"f",value:8, min: 0, max:100},
 _BGLightnessSpeed : {type:"f",value:4, min: 0, max:100}
 
@@ -353,14 +417,14 @@ let lorenzCurve;
 				renderer.domElement.id = "renderer";
 				//renderer.info.alpha = true;
 				document.body.appendChild( renderer.domElement );
-				
+
+			
 
 				
-				stats = new Stats();
+				/*stats = new Stats();
 				stats.dom.id = "stats";
 				stats.dom.style = "";
-				document.body.appendChild( stats.dom );
-
+				document.body.appendChild( stats.dom );*/
 
 				//renderer.toneMapping = THREE.ReinhardToneMapping;
 				renderer.setClearColor(0x00f000, 1)
@@ -422,16 +486,7 @@ let lorenzCurve;
 					initialPoints.push(p);
 
 				}
-				/*const initialPoints = [
-					{ x: -size, y: .1 * size	, z: - size },
-					{ x: -size/2, y: -1 * size, z: -size/2},
-					{ x:  size/2, y: -1 * size, z: - size },
-					{ x: size, y: .1, z: - size/2 },
-					{ x: size, y: .1, z:  size/2 },
-					{ x: -size, y: .1, z: size },
-					//{ x:  size, y: 100, z: - size },
-					//{ x: size, y: 100, z: - size },
-				];*/
+
 
 				const boxGeometry = new THREE.BoxGeometry( 40,40, 40);
 				const boxMaterial = new THREE.MeshBasicMaterial({color:0x00ff00});
@@ -458,139 +513,64 @@ let lorenzCurve;
 				);
 
 
-				var gridHelper = new THREE.GridHelper( 2000, 50, 0x000000, 0x000000 );
-				gridHelper.position.y = - 150;
-				gridHelper.position.x = 0;
-				//gridHelper.rotation.x = .1;
-				//scene.add( gridHelper );
-
-				var gridHelper = new THREE.GridHelper( 2000, 50, 0x000000, 0x000000 );
-				gridHelper.position.y = 150;
-				gridHelper.position.x = 0;
-				gridHelper.rotation.x = -.1;
-				//scene.add( gridHelper );
-
-				const polarGridHelper = new THREE.PolarGridHelper( 200, 16, 8, 64, 0x000000, 0x808080 );
-				polarGridHelper.position.y = - 150;
-				polarGridHelper.position.x = 200;
-				//scene.add( polarGridHelper );
+	
 
 				const group = new THREE.Group();
 				group.scale.multiplyScalar( 100 );
 				group.rotation.x = 3.14159/2
 				scene.add( group );
-				//group.add( line );
 
 
+				// a point to move along the lorenz attractor
 				var boxGeometry1 = new THREE.IcosahedronGeometry( 2,1);
 				var boxMaterial1 = new THREE.MeshBasicMaterial({color:0x000000,wireframe:true});
 				curveRep = new THREE.Mesh( boxGeometry1, boxMaterial1 );
 				scene.add( curveRep );
 
-				// To make sure that the matrixWorld is up to date for the boxhelpers
 				group.updateMatrixWorld( true );
 	
-
 				SetNewLorenz();
 
+
+
+				// Our background object!
 				var raytraceMat2 = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: shaders.vs.trace2,
-        fragmentShader: shaders.fs.trace2,
-        side: THREE.DoubleSide,
-		//depthTest: false,
-		//wireframe : true,
-      })
+					uniforms: uniforms,
+					vertexShader: shaders.vs.trace2,
+					fragmentShader: shaders.fs.trace2,
+					side: THREE.DoubleSide,
+				})
 
 
 
-		var pretty  =new THREE.Mesh( tubeModel.geometry , raytraceMat2 );
-		
-		var s = 10;
-		pretty.position.y = 1;
-		pretty.rotation.x = Math.PI;
-		pretty.scale.set(s,s*10,s);
-		group.add(pretty);
-
-
-
-
-
-
-	 // var curve1 = new Curves.GrannyKnot(.1);
-/*
-	 var matte = new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)});
-	  let tubeGeometry = new THREE.TubeGeometry( curve,100, .01, 3 );
-
-
-	  var s2 = new THREE.ShaderMaterial({
-    uniforms: {
-      uColorA: { value: new THREE.Color(1,.8,1) },
-      uColorB: { value: new THREE.Color(1,.8,0) }
-    },
-        vertexShader: shaders.vs.gradient,
-        fragmentShader: shaders.fs.gradient
-  })
-	  	var pretty  =new THREE.Mesh( tubeGeometry , matte);
-		
-		pretty.rotation.x = .4;
-		pretty.rotation.y = .3;
-		pretty.position.x = 2;
-		var s = .5;
-		pretty.scale.set(s,s,s);
-
-		spiralGeo = pretty;
-
-
-		//group.add(pretty);
+				var bg = new THREE.Mesh( tubeModel.geometry , raytraceMat2 );
 				
-
-
-
-	
-		var pretty  =new THREE.Mesh( tubeGeometry , matte);
-		
-		pretty.rotation.x = .7;
-		pretty.rotation.y = .3;
-		pretty.position.x = -2;
-		var s = .5;
-		pretty.scale.set(s,s,s);
-
-		spiralGeo = pretty;
-
-
-		//group.add(pretty);
-
-*/
+				var s = 10;
+				bg.position.y = 1;
+				bg.rotation.x = Math.PI;
+				bg.scale.set(s,s*10,s);
+				group.add(bg);
 
 
 
 
 
-		
 
 
 
-var raytraceMat = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: shaders.vs.trace,
-        fragmentShader: shaders.fs.trace,
-        side: THREE.DoubleSide,
-		depthTest: false,
-		wireframe : true,
-		transparent: true,
-		//opacity:.5,
-		//blending:THREE.AdditiveBlending,
-      })
+				//
+				var raytraceMat = new THREE.ShaderMaterial({
+					uniforms: uniforms,
+					vertexShader: shaders.vs.trace,
+					fragmentShader: shaders.fs.trace,
+					side: THREE.DoubleSide,
+					depthTest: false,
+					wireframe : true,
+					transparent: true,
+				})
 
-				/*var pretty = new THREE.Mesh( afkModel.geometry , matte);
-				//group.add( pretty );
-
-				var pretty = new THREE.Mesh( afkModel.geometry , new THREE.MeshBasicMaterial({color: new THREE.Color(0,0,0)}));
-				//group.add( pretty );*/
 
 				var pretty = new THREE.Mesh( afkModel.geometry , raytraceMat);
-				//pretty.position.y = 5;
 				group.add( pretty );
 
 			
@@ -624,13 +604,13 @@ scene.add(myGradient);
 
 
 
-const effectFilm = new FilmPass( 0.35, .01, 1, false );
+const effectFilm = new FilmPass( 0.35, 0.025, 648, false );
 
 composer = new EffectComposer( renderer );
 composer.addPass( renderScene );
 //composer.addPass(bloomPass);
 //composer.addPass( halftonePass );
-//composer.addPass(effectFilm);
+composer.addPass(effectFilm);
 
 //composer.addPass( afterimagePass );
 
@@ -652,6 +632,8 @@ bokehPass.uniforms[ 'aperture' ].value = params.aperture * 0.00001;
 bokehPass.uniforms[ 'maxblur' ].value = params.maxblur;
 
 };
+
+/*
 
 const gui = new GUI();
 
@@ -712,7 +694,7 @@ lorenzGUI.close();
 let preset = {};
 
 gui.close();
-
+*/
 
 
 
@@ -727,8 +709,7 @@ gui.close();
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				composer.setSize( width, height );
-				pixelPass.uniforms[ 'resolution' ].value.set( window.innerWidth, window.innerHeight ).multiplyScalar( window.devicePixelRatio );
-
+				
 			}
 
 
@@ -737,7 +718,7 @@ gui.close();
 
 				requestAnimationFrame( animate );
 
-				stats.begin();
+				//stats.begin();
 				const time = - performance.now() * 0.0003;
 				
 				uniforms.dT.value = clock.getDelta();
@@ -775,7 +756,7 @@ gui.close();
 				composer.render();
 
 				
-				stats.end();
+				//stats.end();
 
 			}
 
@@ -787,14 +768,61 @@ gui.close();
 
   function onLoad(){
     numLoaded ++;
+	setLoadBar();
     if( numLoaded == neededToLoad ){
-      init();
-      animate();
+		addStartButton();
+      //init();
+      //animate();
     }
   }
 
 
+var loadBar = document.getElementById("loadBar");
+var lineup = document.getElementById("lineup");
+var info = document.getElementById("info");
+	info.style.visibility = "hidden";
+	lineup.style.visibility = "hidden";
 
+function setLoadBar(){
+
+	console.log(loadBar);
+	
+
+	var p = numLoaded / neededToLoad;
+	console.log(p);
+
+	loadBar.style.width = (p * 100) + "%"
+
+
+}
+
+function addStartButton(){
+	init();
+	let btn = document.createElement("a");
+	btn.id ="startButton";
+	btn.innerHTML = "away from keyboard";
+	btn.onclick = doClick;
+	loadBar.appendChild(btn);
+
+}
+
+
+var doClick = function(){
+	loadBar.style.visibility="hidden";
+	document.body.removeChild(loadBar);
+	console.log("hg");
+	console.log(renderer);
+
+	setTimeout(fullStart, 50);
+	
+}
+
+var fullStart = function(){
+	info.style.visibility = "visible";
+	lineup.style.visibility = "visible";
+	openFullscreen(document.body);
+	animate();
+}
 
   function SetNewLorenz(){
 
