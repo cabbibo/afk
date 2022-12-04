@@ -532,7 +532,6 @@
         event = event || window.event; // IE-ism
 		mouseX = (event.pageX - window.innerWidth/2)/( window.innerWidth/2) ;  
 		mouseY = (event.pageY - window.innerHeight/2)/( window.innerHeight/2) ;  
-		console.log( mouseX );
     }
 
 
@@ -555,13 +554,13 @@
 			uniforms.dT.value = clock.getDelta();
 			uniforms.time.value += uniforms.dT.value;
 
-			extraTargetRotation = mouseX * .5;
-			extraRotation = ( extraTargetRotation - extraRotation ) * .1 + extraRotation; 
+			extraTargetRotation = mouseX * .2;
+			extraRotation = ( extraTargetRotation - extraRotation ) * .03 + extraRotation; 
 
 
 			
 			extraTargetRotation2 = mouseY * .2;
-			extraRotation2 = ( extraTargetRotation2 - extraRotation2 ) * .1 + extraRotation2; 
+			extraRotation2 = ( extraTargetRotation2 - extraRotation2 ) * .03 + extraRotation2; 
 	
 			lorenz.rotation.y = (Math.cos(time * 1) - Math.PI / 4) + extraRotation;
 
