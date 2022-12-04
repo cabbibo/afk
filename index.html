@@ -51,10 +51,11 @@
 <html lang="en">
 
 <head>
-	<title>three.js webgl - helpers</title>
+	<title>afk</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/ttf" crossorigin>
+	<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/ttf" crossorigin> 
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	<style>
 		@font-face {
 			font-family: "ft88";
@@ -172,6 +173,7 @@
 
 	<div id="lineup">
 		<a href="https://www.twitch.tv/pcmusicinfo" target="_blank">
+			<b><h3>away from keyboard</h3></b><br/>
 			Ö<br />
 			A. G. Cook<br />
 			Alex Somers<br />
@@ -341,6 +343,8 @@
 		var spiralGeo;
 		let lorenzCurve;
 
+		var afkText;
+
 		function init() {
 
 
@@ -414,8 +418,9 @@
 			})
 
 
-			var pretty = new THREE.Mesh(afkModel.geometry, raytraceMat);
-			group.add(pretty);
+			afkText = new THREE.Mesh(afkModel.geometry, raytraceMat);
+			group.add(afkText);
+
 
 			const renderScene = new RenderPass(scene, camera);
 
@@ -518,6 +523,28 @@
 
 
 
+	var mouseX = 0;
+	var mouseY = 0;
+    document.onmousemove = handleMouseMove;
+    function handleMouseMove(event) {
+        var eventDoc, doc, body;
+
+        event = event || window.event; // IE-ism
+		mouseX = (event.pageX - window.innerWidth/2)/( window.innerWidth/2) ;  
+		mouseY = (event.pageY - window.innerHeight/2)/( window.innerHeight/2) ;  
+		console.log( mouseX );
+    }
+
+
+
+		// giving some super subtle interaction
+		var extraRotation  = 0;
+		var extraTargetRotation = .3;
+
+		
+		var extraRotation2  = 0;
+		var extraTargetRotation2 = .3;
+
 		function animate() {
 
 			requestAnimationFrame(animate);
@@ -528,18 +555,31 @@
 			uniforms.dT.value = clock.getDelta();
 			uniforms.time.value += uniforms.dT.value;
 
-			camera.position.x = 100 * Math.cos(time * 1);
-			camera.lookAt(scene.position);
+			extraTargetRotation = mouseX * .5;
+			extraRotation = ( extraTargetRotation - extraRotation ) * .1 + extraRotation; 
 
-			lorenz.rotation.y = Math.cos(time * 1) - Math.PI / 4;
+
+			
+			extraTargetRotation2 = mouseY * .2;
+			extraRotation2 = ( extraTargetRotation2 - extraRotation2 ) * .1 + extraRotation2; 
+	
+			lorenz.rotation.y = (Math.cos(time * 1) - Math.PI / 4) + extraRotation;
 
 			lorenz.updateMatrixWorld(true);
+
+
+			afkText.rotation.z = extraRotation;
+			afkText.rotation.x = extraRotation2;
 
 			var c = lorenzCurve.getPointAt(Math.sin(time * .04) * .5 + .5);
 			var c = lorenzCurve.getPointAt((Math.sin(time * .5) * .5 + .55) * .1);
 			c.applyMatrix4(lorenz.matrix);
 			curveRep.position.copy(c);
 			uniforms._TargetPos.value.copy(c);
+
+
+			camera.position.x = 100 * Math.cos(time * 1);
+			camera.lookAt(scene.position);
 
 			composer.render();
 
