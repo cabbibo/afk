@@ -173,7 +173,7 @@
 
 	<div id="lineup">
 		<a href="https://www.twitch.tv/pcmusicinfo" target="_blank">
-			<b><h3>away from keyboard</h3></b><br/>
+			Away From Keyboard<br/><br/>
 			Ö<br />
 			A. G. Cook<br />
 			Alex Somers<br />
@@ -527,13 +527,17 @@
 	var mouseY = 0;
     document.onmousemove = handleMouseMove;
     function handleMouseMove(event) {
-        var eventDoc, doc, body;
-
         event = event || window.event; // IE-ism
 		mouseX = (event.pageX - window.innerWidth/2)/( window.innerWidth/2) ;  
 		mouseY = (event.pageY - window.innerHeight/2)/( window.innerHeight/2) ;  
     }
 
+	document.ontouchmove = handleTouchMove;
+	function handleTouchMove(e) {
+		event = event || window.event; // IE-ism
+		mouseX = (event.touches[0].clientX - window.innerWidth/2)/( window.innerWidth/2) ;  
+		mouseY = (event.touches[0].clientY - window.innerHeight/2)/( window.innerHeight/2) ;  
+	}
 
 
 		// giving some super subtle interaction
