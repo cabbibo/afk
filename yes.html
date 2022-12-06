@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<!--
+
+
+
+                                                                                
+                            88888888          88888888                          
+                      8888888                       8888888                     
+                  88888888                             88888888                 
+               888888888                                 888888888              
+            8888888888                                     8888888888           
+          88888888888                                       88888888888         
+        888888888888                                         888888888888       
+      8888888888888            8888888888888888888            8888888888888     
+     88888888888888        888888888888888888888888888        88888888888888    
+    888888888888888     88888888888           88888888888     888888888888888   
+   8888888888888888   8888888888                 8888888888   8888888888888888  
+  888888888888888888 8888888888                   8888888888 888888888888888888 
+  8888888888888888888888888888                     8888888888888888888888888888 
+ 888888888888888888  888888888     88888888888     888888888  888888888888888888
+ 888888888888888888    88888888888             88888888888    888888888888888888
+ 888888888888888888       888888                 8888888      888888888888888888
+ 888888888888888888    88888888888             88888888888    888888888888888888
+ 888888888888888888  888888888     88888888888     888888888  888888888888888888
+  8888888888888888888888888888                     8888888888888888888888888888 
+  888888888888888888 8888888888                   8888888888 888888888888888888 
+   8888888888888888   8888888888                 8888888888   8888888888888888  
+    888888888888888     88888888888           88888888888     888888888888888   
+     88888888888888        888888888888888888888888888        88888888888888    
+      8888888888888            8888888888888888888            8888888888888     
+        888888888888                                         888888888888       
+          88888888888                                       88888888888         
+            8888888888                                     8888888888           
+               888888888                                 888888888              
+                  88888888                             88888888                 
+                      8888888                       8888888                     
+                            88888888         88888888    
+
+							
+	Thank you for coming!
+	Sorry its messy in here :p
+	
+	DM me on insta / twitter 
+	for GUI shader controls
+	
+	@cabbibo
+
+-->
+
+
+<html lang="en">
+
+<head>
+	<title>afk</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/ttf" crossorigin> 
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<style>
+		@font-face {
+			font-family: "ft88";
+			src: url("fonts/FT88-Expanded.ttf");
+		}
+
+
+
+		body {
+			margin: 0;
+			color: #000;
+			width: 100%;
+			font-size: 10px;
+			line-height: 16px;
+			overscroll-behavior: none;
+			background: #feffe4;
+			font-family: "ft88";
+			overflow: hidden;
+
+		}
+
+		a {
+			color: rgba(0, 0, 0, 0.5);
+			text-decoration: none;
+		}
+
+		a:visited {
+			color: rgba(0, 0, 0, 0.5);
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: #000;
+		}
+
+		#renderer {
+			margin: 0px;
+			height: 100%;
+			width: 100%;
+			left: 0px;
+			position: absolute;
+		}
+
+
+		#info {
+			position: absolute;
+			bottom: 10px;
+			right: 20px;
+			width: 100%;
+			float: right;
+			text-align: right;
+			z-index: 1;
+			visibility: hidden;
+		}
+
+
+		#lineup {
+			position: absolute;
+			top: 10px;
+			left: 20px;
+			width: 100%;
+			float: left;
+			text-align: left;
+			z-index: 1;
+			margin-left: auto;
+			margin-right: auto;
+			visibility: hidden;
+		}
+
+
+		#lineup:a {
+			display: block;
+		}
+
+
+
+		#imgLinks {
+			position: fixed;
+			bottom: 0px;
+			left: 10px;
+			width: 100px;
+
+			z-index: 9999;
+			visibility: hidden;
+			opacity: .7;
+		}
+
+		#imgLinks a:hover {
+			border-bottom: 1px solid black;
+			opacity: 1;
+		}
+
+
+		/*
+		.lil-gui {
+			--width: 500px;
+			--name-width: 15%;
+			--font-family: "ft88";
+			--background: #f00;
+
+		}
+		#stats {
+			bottom: 0px;
+			position: absolute;
+			font-family: "ft88";
+			visibility: hidden;
+		}
+		*/
+	</style>
+</head>
+
+<body>
+
+	<div id="loadBar"></div>
+
+	
+	<script src="lib/jquery.min.js"></script>
+	<!-- Import maps polyfill -->
+	<!-- Remove this when import maps will be widely supported -->
+	<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+	<script type="importmap">
+			{
+				"imports": {
+					"three": "./three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+
+
+	<script type="module">
+
+		import * as THREE from 'three';
+		import {
+			Box3,
+			MathUtils,
+			Matrix4,
+			Matrix3,
+			Ray,
+			Vector3,
+			Color,
+		} from 'three';
+
+		import { ShaderLoader } from './lib/ShaderLoader.js';
+
+		import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+
+		import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+		import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+		import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
+		import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+
+		import * as Curves from 'three/addons/curves/CurveExtras.js';
+
+		import Stats from 'three/addons/libs/stats.module.js';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
+		let scene, renderer;
+		let camera, light;
+		let composer, mixer;
+
+		let stats;
+
+
+
+		let curveRep;
+		var neededToLoad = 0;
+		var numLoaded = 0;
+
+		var shaders = new ShaderLoader('shaders');
+
+		addLoad();
+		shaders.load('fs-trace3', 'trace2', 'fragment');
+		shaders.load('vs-trace2', 'trace2', 'vertex');
+		shaders.load('fs-trace', 'trace', 'fragment');
+		shaders.load('vs-trace', 'trace', 'vertex');
+
+		shaders.shaderSetLoaded = function () {
+			onLoad();
+		}
+
+
+		const objLoader = new OBJLoader();
+		var afkModel;
+
+		addLoad();
+		objLoader.load('YES.obj', function (obj) {
+			onLoad();
+			afkModel = obj.children[0];
+
+		});
+
+
+		var uniforms = {
+
+			dT: { type: "f", value: 0 },
+			time: { type: "f", value: 0 },
+
+			// text
+			_NoiseSize: { type: "f", value: .5 },
+			_NoiseSpeed: { type: "f", value: .2 },
+			_NoiseOffset: { type: "f", value: .5 },
+			_HueStart: { type: "f", value: .9 },
+			_HueSize: { type: "f", value: .001 },
+			_Saturation: { type: "f", value: 1 },
+			_Lightness: { type: "f", value: 1 },
+			_DiscardAmount: { type: "f", value: .9 },
+			_TargetPos: { type: "v3", value: new THREE.Vector3() },
+			_Opacity: { type: "f", value: .3 },
+			_OffsetStepResolution: { type: "f", value: 11111 },
+			_OpacityFalloffSpeed: { type: "f", value: 50 },
+			_GravitySize: { type: "f", value: 50 },
+
+			//bg
+			_BGHueMin: { type: "f", value: 0.75, min: 0, max: 1 },
+			_BGHueMax: { type: "f", value: 1, min: 0, max: 1 },
+			_BGHueSize: { type: "f", value: 10, min: 0, max: 100 },
+			_BGHueSpeed: { type: "f", value: 5, min: 0, max: 11 },
+			_BGSaturationMin: { type: "f", value: .1, min: 0, max: 1 },
+			_BGSaturationMax: { type: "f", value: .8, min: 0, max: 1 },
+			_BGSaturationSize: { type: "f", value: 10, min: 0, max: 100 },
+			_BGSaturationSpeed: { type: "f", value: 5, min: 0, max: 100 },
+			_BGLightnessMin: { type: "f", value: 0.1, min: 0, max: 1 },
+			_BGLightnessMax: { type: "f", value: .9, min: 0, max: 1 },
+			_BGLightnessSize: { type: "f", value: 10, min: 0, max: 100 },
+			_BGLightnessSpeed: { type: "f", value: 5, min: 0, max: 100 }
+
+		}
+
+
+
+		var lorenzParams = {
+			x0: 0.1,
+			y0: 0,
+			z0: 0,
+			h: 0.001,
+			a: 19,
+			b: 22,
+			c: 1.6,
+			startY: .1,
+			scale: 3.5,
+			yOffset: 3.9,
+			thickness: .5,
+			opacity: 0,
+			wireframe: false
+		}
+
+		var lorenz;
+		var clock = new THREE.Clock();
+		var spiralGeo;
+		let lorenzCurve;
+
+		var afkText;
+
+		var chromaticAberration;
+		function init() {
+
+
+
+			renderer = new THREE.WebGLRenderer({ alpha: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.domElement.id = "renderer";
+			document.body.appendChild(renderer.domElement);
+
+
+			renderer.toneMapping = THREE.ReinhardToneMapping;
+			renderer.setClearColor(0x00f000, 1)
+
+			camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 4, 40000);
+			camera.position.z = 400;
+
+
+			//slight changes for mobile!
+			//if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+				camera.position.z = 600;
+				document.body.style.fontSize = "8px";
+				document.body.style.lineHeight = "10px";
+			//}
+
+			scene = new THREE.Scene();
+			scene.background = null;
+
+
+			const group = new THREE.Group();
+			group.scale.multiplyScalar(100);
+			group.rotation.x = 3.14159 / 2
+			scene.add(group);
+
+			// a point to move along the lorenz attractor
+			var geo = new THREE.IcosahedronGeometry(2, 1);
+			var mat = new THREE.MeshBasicMaterial({ color: 0xff4444 });
+			curveRep = new THREE.Mesh(geo, mat);
+			scene.add(curveRep);
+
+			group.updateMatrixWorld(true);
+
+
+			// make attractor
+			SetNewLorenz();
+
+
+			// Our background object!
+			var raytraceMat2 = new THREE.ShaderMaterial({
+				uniforms: uniforms,
+				vertexShader: shaders.vs.trace2,
+				fragmentShader: shaders.fs.trace2,
+				side: THREE.BackSide,
+			})
+			var geo = new THREE.ConeGeometry(2, 100, 4, 1, true)
+			var bg = new THREE.Mesh(geo, raytraceMat2);
+
+			bg.position.y = 1;
+			bg.rotation.x = Math.PI;
+			group.add(bg);
+
+			// make text
+			var raytraceMat = new THREE.ShaderMaterial({
+				uniforms: uniforms,
+				vertexShader: shaders.vs.trace,
+				fragmentShader: shaders.fs.trace,
+				side: THREE.DoubleSide,
+				depthTest: false,
+				wireframe: true,
+				transparent: true,
+			})
+
+
+			afkText = new THREE.Mesh(afkModel.geometry, raytraceMat);
+			group.add(afkText);
+
+
+			const renderScene = new RenderPass(scene, camera);
+
+			const effectFilm = new FilmPass(.5, 0.005, -648, false);
+
+
+
+		chromaticAberration = {
+		uniforms: {
+			tDiffuse: { type: "t", value: null },
+			resolution: {
+				value: new THREE.Vector2(
+					window.innerWidth * window.devicePixelRatio,
+					window.innerHeight * window.devicePixelRatio
+				)
+			},
+			power: { value: 1 }
+		},
+
+		vertexShader: `
+    
+        varying vec2 vUv;
+    
+        void main() {
+    
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    
+        }
+        `,
+
+		fragmentShader: `
+			uniform sampler2D tDiffuse;
+			uniform vec2 resolution;
+
+			vec2 barrelDistortion(vec2 coord, float amt) {
+				vec2 cc = coord - 0.5;
+				float dist = dot(cc, cc);
+				return coord + cc * dist * amt;
+			}
+
+			float sat( float t )
+			{
+				return clamp( t, 0.0, 1.0 );
+			}
+
+			float linterp( float t ) {
+				return sat( 1.0 - abs( 2.0*t - 1.0 ) );
+			}
+
+			float remap( float t, float a, float b ) {
+				return sat( (t - a) / (b - a) );
+			}
+
+			vec4 spectrum_offset( float t ) {
+				vec4 ret;
+				float lo = step(t,0.5);
+				float hi = 1.0-lo;
+				float w = linterp( remap( t, 1.0/6.0, 5.0/6.0 ) );
+				ret = vec4(lo,1.0,hi, 1.) * vec4(1.0-w, w, 1.0-w, 1.);
+
+				return pow( ret, vec4(1.0/2.2) );
+			}
+
+			const float max_distort = 2.2;
+			const int num_iter = 12;
+			const float reci_num_iter_f = 1.0 / float(num_iter);
+
+			void main()
+			{	
+				vec2 uv=(gl_FragCoord.xy/resolution.xy*.5)+.25;
+
+				vec4 sumcol = vec4(0.0);
+				vec4 sumw = vec4(0.0);	
+				for ( int i=0; i<num_iter;++i )
+				{
+					float t = float(i) * reci_num_iter_f;
+					vec4 w = spectrum_offset( t );
+					sumw += w;
+					sumcol += w * texture2D( tDiffuse, barrelDistortion(uv, .6 * max_distort*t ) );
+				}
+
+				gl_FragColor = sumcol / sumw;
+			}
+      `
+	};
+	let chromaticAberrationPass = new ShaderPass(chromaticAberration);
+
+
+			composer = new EffectComposer(renderer);
+			composer.addPass(renderScene);
+			composer.addPass(chromaticAberrationPass);
+
+
+			// post processing
+			window.addEventListener('resize', onWindowResize);
+
+
+
+
+
+
+			
+
+			
+			stats = new Stats();
+			stats.dom.id = "stats";
+			stats.dom.style = "";
+			document.body.appendChild( stats.dom );
+
+			const gui = new GUI();
+			
+			var text = gui.addFolder("TEXT")
+			
+			text.add( uniforms._NoiseOffset, 'value', 0, 2. ).name( 'Noise Offset' )
+			text.add( uniforms._NoiseSize, 'value', 0, 10. ).name( 'Noise Size' )
+			text.add( uniforms._NoiseSpeed, 'value', 0, 2. ).name( 'Noise Speed' )
+			text.add( uniforms._HueStart, 'value', 0, 1. ).name( '_HueStart' )
+			text.add( uniforms._HueSize, 'value', 0, .01 ).name( '_HueSize' )
+			text.add( uniforms._Saturation, 'value', 0, 1 ).name( '_Saturation' )
+			text.add( uniforms._Lightness, 'value', 0, 1 ).name( '_Lightness' )
+			text.add( uniforms._Opacity, 'value', 0, 1 ).name( '_Opacity' )
+			text.add( uniforms._OffsetStepResolution, 'value', 0, 1000).name( '_OffsetStepResolution' )
+			text.add( uniforms._OpacityFalloffSpeed, 'value', 0, 1000 ).name( '_OpacityFalloffSpeed' )
+			text.add( uniforms._GravitySize, 'value', 0, 1000 ).name( '_GravitySize' )
+			
+			text.close()
+			
+			var background = gui.addFolder("BACKGROUND")
+			
+			
+			
+			background.add( uniforms._BGHueMin, 'value',uniforms._BGHueMin.min, uniforms._BGHueMin.max).name('_BGHueMin');
+			background.add( uniforms._BGHueMax, 'value',uniforms._BGHueMax.min, uniforms._BGHueMax.max).name('_BGHueMax');
+			background.add( uniforms._BGHueSize, 'value',uniforms._BGHueSize.min, uniforms._BGHueSize.max).name('_BGHueSize');
+			background.add( uniforms._BGHueSpeed, 'value', uniforms._BGHueSpeed.min, uniforms._BGHueSpeed.max).name('_BGHueSpeed');
+			background.add( uniforms._BGSaturationMin, 'value', uniforms._BGSaturationMin.min, uniforms._BGSaturationMin.max).name('_BGSaturationMin');
+			background.add( uniforms._BGSaturationMax, 'value', uniforms._BGSaturationMax.min, uniforms._BGSaturationMax.max).name('_BGSaturationMax');
+			background.add( uniforms._BGSaturationSize, 'value', uniforms._BGSaturationSize.min, uniforms._BGSaturationSize.max).name('_BGSaturationSize');
+			background.add( uniforms._BGSaturationSpeed, 'value', uniforms._BGSaturationSpeed.min, uniforms._BGSaturationSpeed.max).name('_BGSaturationSpeed');
+			background.add( uniforms._BGLightnessMin, 'value', uniforms._BGLightnessMin.min, uniforms._BGLightnessMin.max).name('_BGLightnessMin');
+			background.add( uniforms._BGLightnessMax, 'value',uniforms._BGLightnessMax.min, uniforms._BGLightnessMax.max).name('_BGLightnessMax');
+			background.add( uniforms._BGLightnessSize, 'value',uniforms._BGLightnessSize.min, uniforms._BGLightnessSize.max).name('_BGLightnessSize');
+			background.add( uniforms._BGLightnessSpeed, 'value', uniforms._BGLightnessSpeed.min, uniforms._BGLightnessSpeed.max).name('_BGLightnessSpeed');
+			
+			
+			background.close();
+			
+			var lorenzGUI = gui.addFolder("lorenz")
+			
+			lorenzGUI.add( lorenzParams, 'a', 0, 40. ).name( 'a' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'b', 0, 80. ).name( 'b' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'c', 0, 3. ).name( 'c' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'scale', 0, 30. ).name( 'scale' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'x0', 0, 3. ).name( 'x0' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'y0', 0, 3. ).name( 'y0' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'z0', 0, 3. ).name( 'z0' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'yOffset', 0, 300. ).name( 'yOffset' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'thickness', 0, 10. ).name( 'thickness' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'opacity', 0, 1. ).name( 'opacity' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'wireframe' ).name( 'wireframe' ).onChange( SetNewLorenz )
+			lorenzGUI.close();
+			let preset = {};
+			
+			gui.close();
+		
+
+
+				onWindowResize();
+
+
+		}
+
+		function onWindowResize() {
+			const width = window.innerWidth * window.devicePixelRatio;
+			const height = window.innerHeight * window.devicePixelRatio;
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			composer.setSize(width*2, height*2);
+
+			/*chromaticAberration.uniforms.resolution.value =  new THREE.Vector2(
+					window.innerWidth * window.devicePixelRatio,
+					window.innerHeight * window.devicePixelRatio
+				);
+			*/
+
+
+		}
+
+
+
+	var mouseX = 0;
+	var mouseY = 0;
+    document.onmousemove = handleMouseMove;
+    function handleMouseMove(event) {
+        event = event || window.event; // IE-ism
+		mouseX = (event.pageX - window.innerWidth/2)/( window.innerWidth/2) ;  
+		mouseY = (event.pageY - window.innerHeight/2)/( window.innerHeight/2) ;  
+    }
+
+	document.ontouchmove = handleTouchMove;
+	function handleTouchMove(event) {
+
+		event = event || window.event; // IE-ism
+		mouseX = 2*(event.touches[0].pageX - window.innerWidth/2)/( window.innerWidth/2) ;  
+		mouseY = 3*(event.touches[0].pageY - window.innerHeight/2)/( window.innerHeight/2) ;  
+	}
+
+
+		// giving some super subtle interaction
+		var extraRotation  = 0;
+		var extraTargetRotation = .3;
+
+		
+		var extraRotation2  = 0;
+		var extraTargetRotation2 = .3;
+
+		function animate() {
+
+			requestAnimationFrame(animate);
+
+			//stats.begin();
+			const time = - performance.now() * 0.0003;
+
+			uniforms.dT.value = clock.getDelta();
+			uniforms.time.value += uniforms.dT.value;
+
+			extraTargetRotation = mouseX * .2;
+			extraRotation = ( extraTargetRotation - extraRotation ) * .03 + extraRotation; 
+
+
+			
+			extraTargetRotation2 = mouseY * .2;
+			extraRotation2 = ( extraTargetRotation2 - extraRotation2 ) * .03 + extraRotation2; 
+	
+			lorenz.rotation.y = (Math.cos(time * 1) - Math.PI / 4) + extraRotation;
+
+			lorenz.updateMatrixWorld(true);
+
+
+			afkText.rotation.z = extraRotation;
+			afkText.rotation.x = extraRotation2;
+
+			var c = lorenzCurve.getPointAt(Math.sin(time * .04) * .5 + .5);
+			var c = lorenzCurve.getPointAt((Math.sin(time * .5) * .5 + .55) * .1);
+			c.applyMatrix4(lorenz.matrix);
+			curveRep.position.copy(c);
+			uniforms._TargetPos.value.copy(c);
+
+
+			camera.position.x = 100 * Math.cos(time * 1);
+			camera.lookAt(scene.position);
+
+			composer.render();
+
+			//stats.end();
+
+		}
+
+
+
+		function addLoad() {
+			neededToLoad++;
+		}
+
+
+		// Only showing all text once 
+		// everything is loaded so only 1 pop
+		var lineup = document.getElementById("lineup");
+		var info = document.getElementById("info");
+		var imgLinks = document.getElementById("imgLinks");
+
+		function onLoad() {
+			numLoaded++;
+			if (numLoaded == neededToLoad) {
+				init();
+				animate();
+				//info.style.visibility = "visible";
+				//lineup.style.visibility = "visible";
+				//imgLinks.style.visibility = "visible";
+			}
+		}
+
+		function SetNewLorenz() {
+
+			var lor = []
+
+			let x0 = lorenzParams.x0;
+			let y0 = lorenzParams.y0;
+			let z0 = lorenzParams.z0;
+			let x1, y1, z1;
+			let h = lorenzParams.h;
+			let a = lorenzParams.a;
+			let b = lorenzParams.b;
+			let c = lorenzParams.c;
+
+
+			var len = 50000;
+			for (let i = 0; i < len; i++) {
+
+				// the actual lorenz equation
+				x1 = x0 + h * a * (y0 - x0);
+				y1 = y0 + h * (x0 * (b - z0) - y0);
+				z1 = z0 + h * (x0 * y0 - c * z0);
+				
+				// setting old values to new values
+				x0 = x1;
+				y0 = y1;
+				z0 = z1;
+				let vertex = new THREE.Vector3(
+					x0,
+					y0,
+					// offsetting vertically
+					z0 - 24);
+				lor.push(vertex);
+			}
+
+
+			var lorGroup = new THREE.Group();
+
+			lorGroup.rotation.x = Math.PI / 2;
+			lorGroup.rotation.z = Math.PI / 2;
+			lorGroup.position.y = lorenzParams.yOffset;
+			var s = lorenzParams.scale;
+			lorGroup.scale.set(s, s, s);
+
+			lorGroup.updateMatrixWorld(true);
+
+			for (let i = 0; i < lor.length; i++) {
+				lor[i] = lor[i].applyMatrix4(lorGroup.matrix);
+			}
+
+
+			var curve = new THREE.CatmullRomCurve3(lor
+			);
+			curve.curveType = 'centripetal';
+			curve.closed = false;
+
+
+
+			var matte = new THREE.MeshBasicMaterial({
+				color: new THREE.Color(0, 0, 0),
+				transparent: true,
+				opacity: lorenzParams.opacity,
+				wireframe: lorenzParams.wireframe
+			});
+
+			lorenzCurve = curve;
+
+			var tubeGeo = new THREE.TubeGeometry(curve, 10000, lorenzParams.thickness, 3);
+
+			var pretty = new THREE.Mesh(tubeGeo, matte);
+
+			if (lorenz) {
+				scene.remove(lorenz);
+			}
+
+			lorenz = pretty;
+
+			scene.add(pretty);
+		}
+
+	</script>
+
+</body>
+
+</html>
