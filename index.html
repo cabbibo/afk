@@ -55,6 +55,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/ttf" crossorigin> 
+	<link rel="preload" href="fonts/FT88-Expanded.ttf" as="font" type="font/ttf" crossorigin> 
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	<style>
 		@font-face {
@@ -147,14 +148,25 @@
 			border-bottom: 1px solid black;
 			opacity: 1;
 		}
-
-
-		/*
+	
 		.lil-gui {
-			--width: 500px;
-			--name-width: 15%;
+			--width: 400px;
 			--font-family: "ft88";
 			--background: #f00;
+			--text-color:rgba(63, 63, 60,1);
+			--title-text-color:rgba(63, 63, 60,1);
+			--title-background-color:rgba(247, 250, 206,.1);
+			--background-color:rgba(247, 250, 206,.1);
+			--widget-color: rgba(247, 250, 206,.1);
+			--name-width:200px;
+			--focus-color: rgba(247, 250, 206,.1);
+			--font-size:8px;
+			--input-font-size:8px;
+			--number-color:rgba(63, 63, 60,1);
+			--widget-color:rgba(63, 63, 60,.3);
+			right:0px;
+			--spacing : 1px;
+			border-top:1px solid rgba(247, 250, 206,1);
 
 		}
 		#stats {
@@ -163,24 +175,13 @@
 			font-family: "ft88";
 			visibility: hidden;
 		}
-		*/
+		
 	</style>
 </head>
 
 <body>
 
-		<!-- redirecting if mobile! -->
-		<script type="text/javascript">
 
-			// check for common mobile user agents
-			if (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i)) {
-	
-				document.location = "https://www.twitch.tv/pcmusicinfo";
-			}else{
-				console.log("hi");
-			}
-		</script>
-	
 
 	<div id="loadBar"></div>
 
@@ -203,12 +204,12 @@
 	</div>
 
 	<div id="info">
-		<a href="https://www.twitch.tv/pcmusicinfo" target="_blank">
+		<!--<a href="https://www.twitch.tv/pcmusicinfo" target="_blank">
 
 			2pm LA<br /> 5pm NY <br /> 10pm London<br />
 			December 11th<br />
 			twitch.tv/pcmusicinfo
-		</a>
+		</a>-->
 
 
 	</div>
@@ -258,8 +259,8 @@
 
 		import * as Curves from 'three/addons/curves/CurveExtras.js';
 
-		//import Stats from 'three/addons/libs/stats.module.js';
-		//import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+		import Stats from 'three/addons/libs/stats.module.js';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 		let scene, renderer;
 		let camera, light;
@@ -452,8 +453,7 @@
 
 
 
-			/*
-			
+
 
 			
 			stats = new Stats();
@@ -462,61 +462,71 @@
 			document.body.appendChild( stats.dom );
 
 			const gui = new GUI();
+			console.log( gui.domElement);
+			gui.domElement.id = "lilGui";
 			
 			var text = gui.addFolder("TEXT")
 			
 			text.add( uniforms._NoiseOffset, 'value', 0, 2. ).name( 'Noise Offset' )
 			text.add( uniforms._NoiseSize, 'value', 0, 10. ).name( 'Noise Size' )
 			text.add( uniforms._NoiseSpeed, 'value', 0, 2. ).name( 'Noise Speed' )
-			text.add( uniforms._HueStart, 'value', 0, 1. ).name( '_HueStart' )
-			text.add( uniforms._HueSize, 'value', 0, .01 ).name( '_HueSize' )
-			text.add( uniforms._Saturation, 'value', 0, 1 ).name( '_Saturation' )
-			text.add( uniforms._Lightness, 'value', 0, 1 ).name( '_Lightness' )
-			text.add( uniforms._Opacity, 'value', 0, 1 ).name( '_Opacity' )
-			text.add( uniforms._OffsetStepResolution, 'value', 0, 1000).name( '_OffsetStepResolution' )
-			text.add( uniforms._OpacityFalloffSpeed, 'value', 0, 1000 ).name( '_OpacityFalloffSpeed' )
-			text.add( uniforms._GravitySize, 'value', 0, 1000 ).name( '_GravitySize' )
+			text.add( uniforms._HueStart, 'value', 0, 1. ).name( 'Hue Start' )
+			text.add( uniforms._HueSize, 'value', 0, .01 ).name( 'Hue Size' )
+			text.add( uniforms._Saturation, 'value', 0, 1 ).name( 'Saturation' )
+			text.add( uniforms._Lightness, 'value', 0, 1 ).name( 'Lightness' )
+			text.add( uniforms._Opacity, 'value', 0, 1 ).name( 'Opacity' )
+			text.add( uniforms._OffsetStepResolution, 'value', 0, 1000).name( 'Offset Resolution' )
+			text.add( uniforms._OpacityFalloffSpeed, 'value', 0, 1000 ).name( 'Opacity Falloff' )
+			text.add( uniforms._GravitySize, 'value', 0, 1000 ).name( 'Gravity Size' )
 			
-			text.close()
+			//text.close()
 			
 			var background = gui.addFolder("BACKGROUND")
 			
 			
 			
-			background.add( uniforms._BGHueMin, 'value',uniforms._BGHueMin.min, uniforms._BGHueMin.max).name('_BGHueMin');
-			background.add( uniforms._BGHueMax, 'value',uniforms._BGHueMax.min, uniforms._BGHueMax.max).name('_BGHueMax');
-			background.add( uniforms._BGHueSize, 'value',uniforms._BGHueSize.min, uniforms._BGHueSize.max).name('_BGHueSize');
-			background.add( uniforms._BGHueSpeed, 'value', uniforms._BGHueSpeed.min, uniforms._BGHueSpeed.max).name('_BGHueSpeed');
-			background.add( uniforms._BGSaturationMin, 'value', uniforms._BGSaturationMin.min, uniforms._BGSaturationMin.max).name('_BGSaturationMin');
-			background.add( uniforms._BGSaturationMax, 'value', uniforms._BGSaturationMax.min, uniforms._BGSaturationMax.max).name('_BGSaturationMax');
-			background.add( uniforms._BGSaturationSize, 'value', uniforms._BGSaturationSize.min, uniforms._BGSaturationSize.max).name('_BGSaturationSize');
-			background.add( uniforms._BGSaturationSpeed, 'value', uniforms._BGSaturationSpeed.min, uniforms._BGSaturationSpeed.max).name('_BGSaturationSpeed');
-			background.add( uniforms._BGLightnessMin, 'value', uniforms._BGLightnessMin.min, uniforms._BGLightnessMin.max).name('_BGLightnessMin');
-			background.add( uniforms._BGLightnessMax, 'value',uniforms._BGLightnessMax.min, uniforms._BGLightnessMax.max).name('_BGLightnessMax');
-			background.add( uniforms._BGLightnessSize, 'value',uniforms._BGLightnessSize.min, uniforms._BGLightnessSize.max).name('_BGLightnessSize');
-			background.add( uniforms._BGLightnessSpeed, 'value', uniforms._BGLightnessSpeed.min, uniforms._BGLightnessSpeed.max).name('_BGLightnessSpeed');
+			background.add( uniforms._BGHueMin, 'value',uniforms._BGHueMin.min, uniforms._BGHueMin.max).name('Hue Min');
+			background.add( uniforms._BGHueMax, 'value',uniforms._BGHueMax.min, uniforms._BGHueMax.max).name('Hue Max');
+			background.add( uniforms._BGHueSize, 'value',uniforms._BGHueSize.min, uniforms._BGHueSize.max).name('Hue Size');
+			background.add( uniforms._BGHueSpeed, 'value', uniforms._BGHueSpeed.min, uniforms._BGHueSpeed.max).name('Hue Speed');
+			background.add( uniforms._BGSaturationMin, 'value', uniforms._BGSaturationMin.min, uniforms._BGSaturationMin.max).name('Saturation Min');
+			background.add( uniforms._BGSaturationMax, 'value', uniforms._BGSaturationMax.min, uniforms._BGSaturationMax.max).name('Saturation Max');
+			background.add( uniforms._BGSaturationSize, 'value', uniforms._BGSaturationSize.min, uniforms._BGSaturationSize.max).name('Saturation Size');
+			background.add( uniforms._BGSaturationSpeed, 'value', uniforms._BGSaturationSpeed.min, uniforms._BGSaturationSpeed.max).name('Saturation Speed');
+			background.add( uniforms._BGLightnessMin, 'value', uniforms._BGLightnessMin.min, uniforms._BGLightnessMin.max).name('Lightness Min');
+			background.add( uniforms._BGLightnessMax, 'value',uniforms._BGLightnessMax.min, uniforms._BGLightnessMax.max).name('Lightness Max');
+			background.add( uniforms._BGLightnessSize, 'value',uniforms._BGLightnessSize.min, uniforms._BGLightnessSize.max).name('Lightness Size');
+			background.add( uniforms._BGLightnessSpeed, 'value', uniforms._BGLightnessSpeed.min, uniforms._BGLightnessSpeed.max).name('Lightness Speed');
 			
 			
-			background.close();
+			//background.close();
 			
-			var lorenzGUI = gui.addFolder("lorenz")
+			var lorenzGUI = gui.addFolder("LORENZ")
 			
-			lorenzGUI.add( lorenzParams, 'a', 0, 40. ).name( 'a' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'b', 0, 80. ).name( 'b' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'c', 0, 3. ).name( 'c' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'scale', 0, 30. ).name( 'scale' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'x0', 0, 3. ).name( 'x0' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'y0', 0, 3. ).name( 'y0' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'z0', 0, 3. ).name( 'z0' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'yOffset', 0, 300. ).name( 'yOffset' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'thickness', 0, 10. ).name( 'thickness' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'opacity', 0, 1. ).name( 'opacity' ).onChange( SetNewLorenz )
-			lorenzGUI.add( lorenzParams, 'wireframe' ).name( 'wireframe' ).onChange( SetNewLorenz )
-			lorenzGUI.close();
+			lorenzGUI.add( lorenzParams, 'a', 0, 40. ).name( 'A' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'b', 0, 80. ).name( 'B' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'c', 0, 3. ).name( 'C' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'scale', 0, 30. ).name( 'Scale' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'x0', 0, 3. ).name( 'X' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'y0', 0, 3. ).name( 'Y' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'z0', 0, 3. ).name( 'Z' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'yOffset', 0, 300. ).name( 'Offset' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'thickness', 0, 10. ).name( 'Thickness' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'opacity', 0, 1. ).name( 'Opacity' ).onChange( SetNewLorenz )
+			lorenzGUI.add( lorenzParams, 'wireframe' ).name( 'Wireframe' ).onChange( SetNewLorenz )
+			//lorenzGUI.close();
 			let preset = {};
 			
-			gui.close();
-			*/
+			//gui.close();
+			
+			// check for common mobile user agents
+			// and hide gui!
+			if (navigator.userAgent.match(/Android/i) || navigator.userAgent.match(/webOS/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPod/i) || navigator.userAgent.match(/BlackBerry/i) || navigator.userAgent.match(/Windows Phone/i)) {
+				
+				var lil = document.getElementsByClassName('lil-gui');
+				var lil = document.getElementById('lilGui');
+				lil.style.display = "none";
+			}
 
 
 
@@ -707,7 +717,12 @@
 			scene.add(pretty);
 		}
 
+
+		
 	</script>
+
+
+	
 
 </body>
 
